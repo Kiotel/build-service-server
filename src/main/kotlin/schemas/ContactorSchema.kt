@@ -1,6 +1,6 @@
-package buildService
+package buildService.schemas
 
-import buildService.UserService.Users.age
+import buildService.schemas.UserService.Users.age
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*

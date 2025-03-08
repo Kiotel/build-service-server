@@ -1,4 +1,4 @@
-package buildService
+package buildService.schemas
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.Serializable
@@ -30,6 +30,10 @@ class UserService(database: Database) {
             it[name] = user.name
             it[age] = user.age
         }[Users.id]
+    }
+
+    suspend fun readAll(): List<ExposedUser>{
+        return dbQuery { Users.selectAll().map { ExposedUser(it[Users.name], it[Users.age]) } }
     }
 
     suspend fun read(id: Int): ExposedUser? {

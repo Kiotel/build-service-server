@@ -4,7 +4,15 @@ ktor:
       - buildService.ApplicationKt.module
   deployment:
     port: 8080
+    host: localhost
+    shutdown:
+      url: "shutdown"
 jwt:
   domain: "https://jwt-provider-domain/"
   audience: "jwt-audience"
   realm: "ktor sample app"
+storage:
+  driverClassName: "org.postgresql.Driver"
+  jdbcURL: "jdbc:postgresql://localhost:12332/test"
+  user: "admin"
+  password: "322031"

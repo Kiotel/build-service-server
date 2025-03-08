@@ -1,4 +1,4 @@
-package buildService
+package buildService.configuration
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm

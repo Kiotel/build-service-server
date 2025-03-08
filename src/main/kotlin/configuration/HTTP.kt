@@ -1,4 +1,4 @@
-package buildService
+package buildService.configuration
 
 import io.ktor.http.*
 import io.ktor.server.application.*

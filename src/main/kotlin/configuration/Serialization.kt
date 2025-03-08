@@ -1,4 +1,4 @@
-package buildService
+package buildService.configuration
 
 import io.ktor.server.application.*
 import io.ktor.server.response.*

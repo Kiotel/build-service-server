@@ -1,9 +1,8 @@
 package buildService.features.users
 
-import buildService.features.workingSites.WorkingSiteDAO
+import buildService.features.workingSites.WorkingSiteDao
 import buildService.features.workingSites.WorkingSiteDto
 import buildService.features.workingSites.WorkingSitesTable
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
@@ -22,7 +21,7 @@ class UserDao(id: EntityID<Int>) : IntEntity(id) {
     var name by UsersTable.name
     var age by UsersTable.age
 
-    val workingSites: SizedIterable<WorkingSiteDAO> by WorkingSiteDAO referrersOn WorkingSitesTable orderBy WorkingSitesTable.id
+    val workingSites: SizedIterable<WorkingSiteDao> by WorkingSiteDao referrersOn WorkingSitesTable orderBy WorkingSitesTable.id
 
     fun toDto() = UserDto(
         id = this.id.value,

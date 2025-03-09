@@ -10,23 +10,42 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.*
 
-@Serializable
-class WorkingSiteDto(val id: Int, val userId: Int, val contractorsIds: List<Int>)
-
-object WorkingSitesTable : IntIdTable("working_sites") { // Lowercase
-    val user = reference("user_id", UsersTable, onDelete = ReferenceOption.CASCADE)
+object WorkingSitesTable : IntIdTable("working_sites") {
+    val name = varchar("name", 255)
+    val userId = reference("user_id", UsersTable, onDelete = ReferenceOption.CASCADE)
 }
 
-class WorkingSiteDAO(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<WorkingSiteDAO>(WorkingSitesTable)
+class WorkingSiteDao(id: EntityID<Int>) : IntEntity(id) {
+    companion object : IntEntityClass<WorkingSiteDao>(WorkingSitesTable)
 
-    val user: UserDao by UserDao referencedOn WorkingSitesTable.user
-    val contractors: SizedIterable<ContractorDao> by ContractorDao via WorkingSiteContactorsTable
+    var name by WorkingSitesTable.name
+    var user by UserDao referencedOn WorkingSitesTable.userId
+    var contractors by ContractorDao via WorkingSiteContractorsTable
 
     fun toDto() = WorkingSiteDto(
         id = this.id.value,
+        name = this.name,
         userId = this.user.id.value,
-        contractorsIds = this.contractors.map { it.id.value }
-    )
+        contractorsIds = this.contractors.map { it.id.value })
 }
 
+
+@Serializable
+data class WorkingSiteDto(
+    val id: Int,
+    val name: String,
+    val userId: Int,
+    val contractorsIds: List<Int>?
+)
+
+@Serializable
+data class CreateWorkingSiteDto(
+    val name: String,
+    val userId: Int
+)
+
+@Serializable
+data class UpdateWorkingSiteDto(
+    val name: String?,
+    val contractorsIds: List<Int>?
+)

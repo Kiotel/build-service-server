@@ -2,7 +2,7 @@ package buildService.configuration
 
 import buildService.features.contactors.ContractorsTable
 import buildService.features.users.UsersTable
-import buildService.features.workingSites.WorkingSiteContactorsTable
+import buildService.features.workingSites.WorkingSiteContractorsTable
 import buildService.features.workingSites.WorkingSitesTable
 import io.ktor.server.application.Application
 import org.jetbrains.exposed.sql.Database
@@ -15,7 +15,7 @@ fun Application.configureSchemas(database: Database) {
             UsersTable,
             ContractorsTable,
             WorkingSitesTable,
-            WorkingSiteContactorsTable
+            WorkingSiteContractorsTable
         )
     }
 }

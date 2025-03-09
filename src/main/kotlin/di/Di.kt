@@ -4,6 +4,8 @@ import buildService.features.contactors.ContractorRepository
 import buildService.features.contactors.ContractorRepositoryImpl
 import buildService.features.users.UserRepository
 import buildService.features.users.UserRepositoryImpl
+import buildService.features.users.WorkingSiteRepository
+import buildService.features.users.WorkingSiteRepositoryImpl
 import io.ktor.server.application.*
 import io.ktor.server.config.ApplicationConfig
 import org.jetbrains.exposed.sql.Database
@@ -29,6 +31,10 @@ fun Application.configureDi(config: ApplicationConfig) {
         }
         singleOf(::ContractorRepositoryImpl) {
             bind<ContractorRepository>()
+            createdAtStart()
+        }
+        singleOf(::WorkingSiteRepositoryImpl) {
+            bind<WorkingSiteRepository>()
             createdAtStart()
         }
     }

@@ -1,45 +1,62 @@
-package buildService.features.workingSites
+package buildService.features.users
 
-import buildService.features.users.UserDao
-import buildService.features.users.UserDto
-import buildService.features.users.UsersTable
+import buildService.features.contactors.ContractorDao
+import buildService.features.contactors.ContractorsTable
 import buildService.features.users.UsersTable.age
+import buildService.features.workingSites.CreateWorkingSiteDto
+import buildService.features.workingSites.UpdateWorkingSiteDto
+import buildService.features.workingSites.WorkingSiteDao
+import buildService.features.workingSites.WorkingSiteDto
+import buildService.features.workingSites.WorkingSitesTable.userId
 import buildService.shared.utils.dbQuery
+import io.ktor.server.plugins.NotFoundException
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.SizedCollection
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
-interface UserRepository{
-    suspend fun findAll(): List<UserDto>
-    suspend fun findById(id: Int): UserDto?
-    suspend fun update(userDto: UserDto)
+interface WorkingSiteRepository {
+    suspend fun create(user: CreateWorkingSiteDto): WorkingSiteDto
+    suspend fun findAll(): List<WorkingSiteDto>
+    suspend fun findById(id: Int): WorkingSiteDto?
+    suspend fun update(id: Int, workingSiteDto: UpdateWorkingSiteDto)
     suspend fun delete(id: Int)
 }
 
-class UserRepositoryImpl() : UserRepository {
-    suspend fun create(user: UserDto) = dbQuery {
-        UserDao.new {
-            name = user.name
-            age = user.age
-        }
+class WorkingSiteRepositoryImpl() : WorkingSiteRepository {
+    override suspend fun create(workingSite: CreateWorkingSiteDto): WorkingSiteDto = dbQuery {
+        val user = UserDao.findById(workingSite.userId)
+            ?: throw NotFoundException("User with id ${workingSite.userId} not found")
+
+        WorkingSiteDao.new {
+            name = workingSite.name
+            this.user = user
+        }.toDto()
     }
 
-    override suspend fun findAll(): List<UserDto> {
+    override suspend fun findAll(): List<WorkingSiteDto> {
         return dbQuery {
-            UserDao.all().map(UserDao::toDto)
+            WorkingSiteDao.all().map(WorkingSiteDao::toDto)
         }
     }
 
-    override suspend fun findById(id: Int): UserDto? {
+    override suspend fun findById(id: Int): WorkingSiteDto? {
         return dbQuery {
-            UserDao.findById(id)?.toDto()
+            WorkingSiteDao.findById(id)?.toDto()
         }
     }
 
-    override suspend fun update(user: UserDto) {
+    override suspend fun update(id: Int, updateDto: UpdateWorkingSiteDto) {
         dbQuery {
-            UserDao.findByIdAndUpdate(user.id) {
-                it.name = user.name
-                it.age = user.age
+            val workingSite = WorkingSiteDao.findById(id)
+                ?: throw NotFoundException("Working site with id $id not found")
+
+            updateDto.name?.let { workingSite.name = it }
+
+            updateDto.contractorsIds?.let { ids ->
+                val contractors = ContractorDao.find { ContractorsTable.id inList ids }.toList()
+                if (contractors.size != ids.size) throw NotFoundException()
+                workingSite.contractors = SizedCollection(contractors)
             }
         }
     }

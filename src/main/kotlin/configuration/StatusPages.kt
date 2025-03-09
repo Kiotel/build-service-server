@@ -3,6 +3,7 @@ package buildService.configuration
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
+import io.ktor.server.plugins.NotFoundException
 import io.ktor.server.plugins.requestvalidation.RequestValidationException
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
@@ -17,8 +18,17 @@ fun Application.configureStatusPages() {
         exception<RequestValidationException> { call, cause ->
             call.respond(HttpStatusCode.BadRequest, cause.reasons.joinToString())
         }
-        exception<IllegalArgumentException>{ call, cause ->
-            call.respond(HttpStatusCode.BadRequest, cause.message ?: "Unknown error")
+        exception<IllegalArgumentException> { call, cause ->
+            call.respond(HttpStatusCode.BadRequest, mapOf("error" to cause.message))
+        }
+        exception<NotFoundException> { call, cause ->
+            call.respond(HttpStatusCode.NotFound, cause.message ?: "Unknown error")
+        }
+        exception<ExposedSQLException> { call, cause ->
+            call.respond(
+                HttpStatusCode.InternalServerError,
+                mapOf("error" to "Database constraint violation")
+            )
         }
     }
 }

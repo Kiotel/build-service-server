@@ -7,7 +7,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.contractorsRoutes(contactorRepository: ContractorRepository) {
+fun Route.contractorsRoutes(contractorRepository: ContractorRepository) {
     route("/contractors") {
         install(RequestValidation) {
             validate<UpdateContractorDto> {
@@ -25,13 +25,13 @@ fun Route.contractorsRoutes(contactorRepository: ContractorRepository) {
         // Create contractor
         post {
             val contractor = call.receive<CreateContractorDto>()
-            val id = contactorRepository.create(contractor)
+            val id = contractorRepository.create(contractor)
             call.respond(HttpStatusCode.Created, id)
         }
 
         // find all contractors
         get {
-            val contractors = contactorRepository.findAll()
+            val contractors = contractorRepository.findAll()
             call.respond(HttpStatusCode.OK, contractors)
         }
 
@@ -39,9 +39,8 @@ fun Route.contractorsRoutes(contactorRepository: ContractorRepository) {
         route("/{id}") {
             // Read contractor
             get {
-                val id =
-                    call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-                val contractor = contactorRepository.findById(id)
+                val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
+                val contractor = contractorRepository.findById(id)
                 if (contractor != null) {
                     call.respond(HttpStatusCode.OK, contractor)
                 } else {
@@ -54,7 +53,7 @@ fun Route.contractorsRoutes(contactorRepository: ContractorRepository) {
                 val id =
                     call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
                 val contractor = call.receive<UpdateContractorDto>()
-                contactorRepository.update(id, contractor)
+                contractorRepository.update(id, contractor)
                 call.respond(HttpStatusCode.OK)
             }
 
@@ -62,7 +61,7 @@ fun Route.contractorsRoutes(contactorRepository: ContractorRepository) {
             delete {
                 val id =
                     call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-                contactorRepository.delete(id)
+                contractorRepository.delete(id)
                 call.respond(HttpStatusCode.OK)
             }
         }

@@ -2,18 +2,15 @@ package buildService.features.users
 
 import buildService.features.contactors.ContractorDao
 import buildService.features.contactors.ContractorsTable
-import buildService.features.users.UsersTable.age
 import buildService.features.workingSites.CreateWorkingSiteDto
 import buildService.features.workingSites.UpdateWorkingSiteDto
 import buildService.features.workingSites.WorkingSiteDao
 import buildService.features.workingSites.WorkingSiteDto
-import buildService.features.workingSites.WorkingSitesTable.userId
 import buildService.shared.utils.dbQuery
-import io.ktor.server.plugins.NotFoundException
-import org.jetbrains.exposed.dao.id.EntityID
+import io.ktor.server.plugins.*
 import org.jetbrains.exposed.sql.SizedCollection
-import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
 
 interface WorkingSiteRepository {
     suspend fun create(user: CreateWorkingSiteDto): WorkingSiteDto

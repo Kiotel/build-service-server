@@ -1,22 +1,26 @@
 package buildService.features.users
 
 import buildService.shared.utils.dbQuery
-import org.jetbrains.exposed.sql.deleteWhere
+import buildService.shared.utils.hashPassword
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
 
 interface UserRepository {
-    suspend fun create(user: CreateUserDto): UserDto
+    suspend fun create(user: RegisterUserDto): UserDto
+    suspend fun findByEmail(email: String): UserDao?
     suspend fun findAll(): List<UserDto>
     suspend fun findById(id: Int): UserDto?
     suspend fun update(id: Int, userDto: UpdateUserDto)
-    suspend fun delete(id: Int)
+    suspend fun delete(id: Int): Boolean
 }
 
 class UserRepositoryImpl() : UserRepository {
-    override suspend fun create(user: CreateUserDto): UserDto = dbQuery {
+    override suspend fun create(user: RegisterUserDto): UserDto = dbQuery {
+        var passwordHashed = user.password.hashPassword()
         UserDao.new {
             name = user.name
-            age = user.age
+            email = user.email
+            password = passwordHashed
         }.toDto()
     }
 
@@ -32,18 +36,24 @@ class UserRepositoryImpl() : UserRepository {
         }
     }
 
+    override suspend fun findByEmail(emailWanted: String): UserDao? {
+        return dbQuery {
+            UserDao.find { UsersTable.email eq emailWanted }.firstOrNull()
+        }
+    }
+
     override suspend fun update(id: Int, user: UpdateUserDto) {
         dbQuery {
             UserDao.findByIdAndUpdate(id) {
                 it.name = user.name
-                it.age = user.age
+                it.email = user.email
             }
         }
     }
 
-    override suspend fun delete(id: Int) {
-        dbQuery {
+    override suspend fun delete(id: Int): Boolean {
+        return dbQuery {
             UsersTable.deleteWhere { UsersTable.id.eq(id) }
-        }
+        } > 0
     }
 }

@@ -8,6 +8,7 @@ ktor:
     shutdown:
       url: "shutdown"
 jwt:
+  secret: "secret"
   domain: "https://jwt-provider-domain/"
   audience: "jwt-audience"
   realm: "ktor sample app"

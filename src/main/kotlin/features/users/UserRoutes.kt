@@ -1,7 +1,10 @@
 package buildService.features.users
 
+import buildService.shared.utils.validateEmail
 import buildService.shared.utils.validateName
+import buildService.shared.utils.validatePassword
 import io.ktor.http.*
+import io.ktor.server.plugins.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -15,8 +18,10 @@ fun Route.userRoutes(userRepository: UserRepository) {
                 if (errors.isEmpty()) ValidationResult.Valid
                 else ValidationResult.Invalid(errors)
             }
-            validate<CreateUserDto> {
+            validate<RegisterUserDto> {
                 val errors = validateName(it.name)
+                errors.addAll(validateEmail(it.email))
+                errors.addAll(validatePassword(it.password))
                 if (errors.isEmpty()) ValidationResult.Valid
                 else ValidationResult.Invalid(errors)
             }
@@ -24,9 +29,13 @@ fun Route.userRoutes(userRepository: UserRepository) {
 
         // Create user
         post {
-            val user = call.receive<CreateUserDto>()
-            val id = userRepository.create(user)
-            call.respond(HttpStatusCode.Created, id)
+            val user = call.receive<RegisterUserDto>()
+            userRepository.findByEmail(user.email)?.let {
+                throw BadRequestException("Email already in use")
+            }
+            val result = userRepository.create(user)
+            call.respond(HttpStatusCode.Created, result)
+
         }
 
         // find all users
@@ -43,11 +52,8 @@ fun Route.userRoutes(userRepository: UserRepository) {
                 val id =
                     call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
                 val user = userRepository.findById(id)
-                if (user != null) {
-                    call.respond(HttpStatusCode.OK, user)
-                } else {
-                    call.respond(HttpStatusCode.NotFound)
-                }
+                    ?: throw NotFoundException("User with ID $id not found")
+                call.respond(HttpStatusCode.OK, user)
             }
 
             // Update user
@@ -64,7 +70,9 @@ fun Route.userRoutes(userRepository: UserRepository) {
             delete {
                 val id =
                     call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-                userRepository.delete(id)
+                if (userRepository.delete(id) == false) {
+                    throw NotFoundException("User with ID $id not found")
+                }
                 call.respond(HttpStatusCode.OK)
             }
         }

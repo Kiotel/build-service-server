@@ -7,7 +7,7 @@ import buildService.features.users.UserRepositoryImpl
 import buildService.features.users.WorkingSiteRepository
 import buildService.features.users.WorkingSiteRepositoryImpl
 import io.ktor.server.application.*
-import io.ktor.server.config.ApplicationConfig
+import io.ktor.server.config.*
 import org.jetbrains.exposed.sql.Database
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.createdAtStart

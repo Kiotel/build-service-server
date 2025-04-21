@@ -1,9 +1,13 @@
 package buildService.features.users
 
+import buildService.configuration.AccessForbiddenException
+import buildService.configuration.UserRole
 import buildService.shared.utils.validateEmail
 import buildService.shared.utils.validateName
 import buildService.shared.utils.validatePassword
 import io.ktor.http.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.request.*
@@ -67,13 +71,23 @@ fun Route.userRoutes(userRepository: UserRepository) {
             }
 
             // Delete user
-            delete {
-                val id =
-                    call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-                if (userRepository.delete(id) == false) {
-                    throw NotFoundException("User with ID $id not found")
+            authenticate("jwt") {
+                delete {
+                    val principal = call.principal<JWTPrincipal>()
+                    val principalId = principal?.payload?.getClaim("id")?.asString()
+                    val role = principal?.payload?.getClaim("role")?.asString()
+                    val id =
+                        call.parameters["id"]?.toInt()
+                            ?: throw IllegalArgumentException("Invalid ID")
+                    if (role == UserRole.ADMIN.name || id.toString() == principalId) {
+                        if (userRepository.delete(id) == false) {
+                            throw NotFoundException("User with ID $id not found")
+                        }
+                    } else {
+                        throw AccessForbiddenException("Access denied")
+                    }
+                    call.respond(HttpStatusCode.OK)
                 }
-                call.respond(HttpStatusCode.OK)
             }
         }
     }

@@ -11,7 +11,10 @@ import org.jetbrains.exposed.exceptions.ExposedSQLException
 fun Application.configureStatusPages() {
     install(StatusPages) {
         exception<RequestValidationException> { call, cause ->
-            call.respond(HttpStatusCode.BadRequest, mapOf("error" to cause.reasons.joinToString()))
+            call.respond(
+                HttpStatusCode.BadRequest,
+                mapOf("error" to cause.reasons.joinToString(",\n"))
+            )
         }
         exception<IllegalArgumentException> { call, cause ->
             call.respond(HttpStatusCode.BadRequest, mapOf("error" to cause.message))
@@ -30,5 +33,12 @@ fun Application.configureStatusPages() {
                 mapOf("error" to "Database constraint violation")
             )
         }
+        exception<AccessForbiddenException> { call, cause ->
+            call.respond(
+                HttpStatusCode.Forbidden, mapOf("error" to (cause.message ?: "Unknown error"))
+            )
+        }
     }
 }
+
+class AccessForbiddenException(message: String) : Throwable(message)

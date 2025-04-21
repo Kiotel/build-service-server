@@ -87,16 +87,17 @@ fun Route.authRoutes(userRepository: UserRepository, contractorRepository: Contr
                     }
                 }
             }
-
+            var id = user?.id?.value ?: contractor?.id?.value ?: -1
             if (user != null || contractor != null || role == UserRole.ADMIN) {
                 val password =
                     if (role == UserRole.ADMIN) "1" else user?.password ?: contractor!!.password
                 if (verifyPasswords(loginUserDto.password, password) || role == UserRole.ADMIN) {
                     val token = JWT.create().withAudience(jwtAudience).withIssuer(jwtIssuer)
                         .withClaim("email", loginUserDto.email).withClaim("role", role.name)
+                        .withClaim("id", id.toString())
                         .withExpiresAt(Date(System.currentTimeMillis() + validityInMs))
                         .sign(Algorithm.HMAC256(jwtSecret))
-                    call.respond(hashMapOf("token" to token))
+                    call.respond(LoginResultDto(id, token, role.name))
                 } else {
                     call.respond(HttpStatusCode.Unauthorized, "Invalid password")
                 }
@@ -106,3 +107,6 @@ fun Route.authRoutes(userRepository: UserRepository, contractorRepository: Contr
         }
     }
 }
+
+@Serializable
+data class LoginResultDto(val id: Int, val token: String, val role: String)

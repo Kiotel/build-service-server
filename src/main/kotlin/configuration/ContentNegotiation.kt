@@ -1,8 +1,8 @@
 package buildService.configuration
 
-import io.ktor.serialization.kotlinx.json.json
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.contentnegotiation.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNamingStrategy
@@ -13,7 +13,7 @@ fun Application.configureContentNegotiation() {
         namingStrategy = JsonNamingStrategy.SnakeCase
         explicitNulls = false
         isLenient = true
-        encodeDefaults = true
+
         ignoreUnknownKeys = true
     }
     install(ContentNegotiation) {

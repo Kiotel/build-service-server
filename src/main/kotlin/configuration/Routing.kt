@@ -6,6 +6,7 @@ import buildService.features.users.UserRepository
 import buildService.features.users.WorkingSiteRepository
 import buildService.features.users.userRoutes
 import buildService.features.workingSites.workingSitesRoutes
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -28,8 +29,11 @@ fun Application.configureRouting() {
                 val principal = call.principal<JWTPrincipal>()
                 val email = principal?.payload?.getClaim("email")?.asString()
                 val role = principal?.payload?.getClaim("role")?.asString()
-                call.respond("Authenticated as $email with role $role")
+                call.respond(mapOf("email" to email, "role" to role))
             }
+        }
+        get("/") {
+            call.respond(HttpStatusCode.OK)
         }
     }
 }

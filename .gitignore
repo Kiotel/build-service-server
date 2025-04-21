@@ -35,4 +35,6 @@ out/
 ### VS Code ###
 .vscode/
 /db/postgres_data/
-/db/.env
+/db/prod/.env
+/db/prod/postgres_data/
+/db/test/postgres_data/

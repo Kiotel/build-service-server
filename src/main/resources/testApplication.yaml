@@ -14,6 +14,6 @@ jwt:
   realm: "ktor sample app"
 storage:
   driverClassName: "org.postgresql.Driver"
-  jdbcURL: "jdbc:postgresql://localhost:12332/databaseProd"
+  jdbcURL: "jdbc:postgresql://localhost:12331/databaseTest"
   user: "admin"
   password: "322031"

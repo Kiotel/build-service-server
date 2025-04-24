@@ -6,6 +6,7 @@ import buildService.features.users.UserRepository
 import buildService.features.users.WorkingSiteRepository
 import buildService.features.users.userRoutes
 import buildService.features.workingSites.workingSitesRoutes
+import io.github.smiley4.ktoropenapi.get
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*

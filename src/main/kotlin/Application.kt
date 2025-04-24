@@ -13,7 +13,6 @@ fun Application.module(config: ApplicationConfig = environment.config) {
     configureSecurity()
     configureStatusPages()
     configureHTTP()
-    configureSerialization()
     configureContentNegotiation()
     configureAdministration()
     configureDi()

@@ -3,6 +3,7 @@ package buildService.configuration
 import io.github.smiley4.ktoropenapi.OpenApi
 import io.github.smiley4.ktoropenapi.config.AuthScheme
 import io.github.smiley4.ktoropenapi.config.AuthType
+import io.github.smiley4.ktoropenapi.config.SchemaGenerator
 import io.github.smiley4.ktoropenapi.openApi
 import io.github.smiley4.ktorswaggerui.swaggerUI
 import io.ktor.http.*
@@ -21,7 +22,13 @@ fun Application.configureHTTP() {
         anyHost() // @TODO: Don't do this in production if possible. Try to limit it.
     }
     install(OpenApi) {
-        schemas { }
+        this.info {
+            this.summary = "API для BuildService"
+            this.version = "0.1"
+        }
+        schemas {
+            generator = SchemaGenerator.kotlinx()
+        }
         security {
             // configure a basic-auth security scheme
             securityScheme("MySecurityScheme") {

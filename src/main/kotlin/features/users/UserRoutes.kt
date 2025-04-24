@@ -5,6 +5,8 @@ import buildService.configuration.UserRole
 import buildService.shared.utils.validateEmail
 import buildService.shared.utils.validateName
 import buildService.shared.utils.validatePassword
+import io.github.smiley4.ktoropenapi.post
+import io.github.smiley4.ktoropenapi.route
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -15,7 +17,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.userRoutes(userRepository: UserRepository) {
-    route("/users") {
+    route("users") {
         install(RequestValidation) {
             validate<UpdateUserDto> {
                 val errors = validateName(it.name)
@@ -32,7 +34,27 @@ fun Route.userRoutes(userRepository: UserRepository) {
         }
 
         // Create user
-        post {
+        post({
+            summary = "Создание пользователя"
+            description = "Хотя правильнее назвать регистрация"
+            request {
+                body<RegisterUserDto> { required = true }
+            }
+            response {
+                code(HttpStatusCode.OK) {
+                    body<UserDto> {
+                        required = true
+                    }
+                    description = "Пользователь успешно создан"
+                }
+                code(HttpStatusCode.BadRequest) {
+                    body<String> {
+                        required = true
+                    }
+                    description = "Почта уже занята или другая ошибка"
+                }
+            }
+        }) {
             val user = call.receive<RegisterUserDto>()
             userRepository.findByEmail(user.email)?.let {
                 throw BadRequestException("Email already in use")
@@ -76,9 +98,8 @@ fun Route.userRoutes(userRepository: UserRepository) {
                     val principal = call.principal<JWTPrincipal>()
                     val principalId = principal?.payload?.getClaim("id")?.asString()
                     val role = principal?.payload?.getClaim("role")?.asString()
-                    val id =
-                        call.parameters["id"]?.toInt()
-                            ?: throw IllegalArgumentException("Invalid ID")
+                    val id = call.parameters["id"]?.toInt()
+                        ?: throw IllegalArgumentException("Invalid ID")
                     if (role == UserRole.ADMIN.name || id.toString() == principalId) {
                         if (userRepository.delete(id) == false) {
                             throw NotFoundException("User with ID $id not found")

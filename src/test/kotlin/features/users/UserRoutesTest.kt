@@ -8,16 +8,13 @@ import buildService.configuration.UserRole
 import buildService.features.users.RegisterUserDto
 import buildService.features.users.UserDto
 import buildService.module
+import createTestClient
 import io.ktor.client.call.*
-import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.config.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonNamingStrategy
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
@@ -40,16 +37,7 @@ class UserRoutesTest {
     @Test
     fun test_0_adminLogin() = testApplication {
         application { module(testConfig) }
-        val client = createClient {
-            install(ContentNegotiation) {
-                json(Json {
-                    namingStrategy = JsonNamingStrategy.SnakeCase
-                    explicitNulls = false
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                })
-            }
-        }
+        val client = createTestClient()
         val response = client.post("/login") {
             contentType(ContentType.Application.Json)
             setBody(LoginDto(email = "admin@admin", password = "admin123"))
@@ -65,16 +53,7 @@ class UserRoutesTest {
     @Test
     fun test_1_getAllUsers() = testApplication {
         application { module(testConfig) }
-        val client = createClient {
-            install(ContentNegotiation) {
-                json(Json {
-                    namingStrategy = JsonNamingStrategy.SnakeCase
-                    explicitNulls = false
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                })
-            }
-        }
+        val client = createTestClient()
         val response = client.get("/users")
         assertEquals(HttpStatusCode.OK, response.status, "Couldn't get all users")
         users = response.body()
@@ -84,25 +63,14 @@ class UserRoutesTest {
     @Test
     fun test_2_deleteAllUsers() = testApplication {
         application { module(testConfig) }
-        val client = createClient {
-            install(ContentNegotiation) {
-                json(Json {
-                    namingStrategy = JsonNamingStrategy.SnakeCase
-                    explicitNulls = false
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                })
-            }
-        }
+        val client = createTestClient()
         assertNotEquals("", adminToken, "Admin token is not set")
         users.forEach { user ->
             val response = client.delete("/users/${user.id}") {
                 bearerAuth(adminToken)
             }
             assertEquals(
-                HttpStatusCode.OK,
-                response.status,
-                "Couldn't delete user with ID ${user.id}"
+                HttpStatusCode.OK, response.status, "Couldn't delete user with ID ${user.id}"
             )
             logger.info("Deleted user with id ${user.id}")
         }
@@ -111,16 +79,7 @@ class UserRoutesTest {
     @Test
     fun test_3_registerUser() = testApplication {
         application { module(testConfig) }
-        val client = createClient {
-            install(ContentNegotiation) {
-                json(Json {
-                    namingStrategy = JsonNamingStrategy.SnakeCase
-                    explicitNulls = false
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                })
-            }
-        }
+        val client = createTestClient()
         val response = client.post("/users") {
             contentType(ContentType.Application.Json)
             setBody(RegisterUserDto(name = "test", email = "test@test.test", password = "testtest"))
@@ -136,16 +95,7 @@ class UserRoutesTest {
     @Test
     fun test_4_userLogin() = testApplication {
         application { module(testConfig) }
-        val client = createClient {
-            install(ContentNegotiation) {
-                json(Json {
-                    namingStrategy = JsonNamingStrategy.SnakeCase
-                    explicitNulls = false
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                })
-            }
-        }
+        val client = createTestClient()
         val response = client.post("/login") {
             contentType(ContentType.Application.Json)
             setBody(LoginDto(email = "test@test.test", password = "testtest"))
@@ -162,16 +112,7 @@ class UserRoutesTest {
     @Test
     fun test_5_deleteUser() = testApplication {
         application { module(testConfig) }
-        val client = createClient {
-            install(ContentNegotiation) {
-                json(Json {
-                    namingStrategy = JsonNamingStrategy.SnakeCase
-                    explicitNulls = false
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                })
-            }
-        }
+        val client = createTestClient()
         assertNotEquals(-1, userId, "User ID is not set")
         assertNotEquals("", userToken, "User token is not set")
         val response = client.delete("/users/$userId") {

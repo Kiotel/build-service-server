@@ -28,7 +28,6 @@ dependencies {
     implementation("io.ktor:ktor-server-auth")
     implementation("io.ktor:ktor-server-auth-jwt")
     implementation("io.ktor:ktor-server-cors")
-    implementation("io.ktor:ktor-server-swagger")
     implementation("io.ktor:ktor-server-content-negotiation")
     implementation("io.ktor:ktor-serialization-kotlinx-json")
     implementation("io.ktor:ktor-server-status-pages")
@@ -47,4 +46,6 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     testImplementation("io.ktor:ktor-server-test-host-jvm")
     testImplementation("io.ktor:ktor-client-content-negotiation")
+    implementation("io.github.smiley4:ktor-openapi:5.0.2")
+    implementation("io.github.smiley4:ktor-swagger-ui:5.0.2")
 }

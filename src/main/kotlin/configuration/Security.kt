@@ -67,10 +67,6 @@ fun Route.authRoutes(userRepository: UserRepository, contractorRepository: Contr
                 else ValidationResult.Invalid(errors)
             }
         }
-        get {
-            call.respond(HttpStatusCode.OK, "Success")
-        }
-
         post {
             val loginUserDto = call.receive<LoginDto>()
             var role: UserRole = UserRole.USER

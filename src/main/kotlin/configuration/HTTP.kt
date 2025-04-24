@@ -1,9 +1,13 @@
 package buildService.configuration
 
+import io.github.smiley4.ktoropenapi.OpenApi
+import io.github.smiley4.ktoropenapi.config.AuthScheme
+import io.github.smiley4.ktoropenapi.config.AuthType
+import io.github.smiley4.ktoropenapi.openApi
+import io.github.smiley4.ktorswaggerui.swaggerUI
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.cors.routing.*
-import io.ktor.server.plugins.swagger.*
 import io.ktor.server.routing.*
 
 fun Application.configureHTTP() {
@@ -16,7 +20,29 @@ fun Application.configureHTTP() {
         allowHeader("MyCustomHeader")
         anyHost() // @TODO: Don't do this in production if possible. Try to limit it.
     }
-    routing {
-        swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml")
+    install(OpenApi) {
+        schemas { }
+        security {
+            // configure a basic-auth security scheme
+            securityScheme("MySecurityScheme") {
+                type = AuthType.HTTP
+                scheme = AuthScheme.BEARER
+            }
+            // if no other security scheme is specified for a route, the one with this name is used instead
+            defaultSecuritySchemeNames("MySecurityScheme")
+            // if no other response is documented for "401 Unauthorized", this information is used instead
+            defaultUnauthorizedResponse {
+                description = "Unauthorized"
+            }
+        }
     }
+    routing {
+        route("api.json") {
+            openApi()
+        }
+        route("swagger") {
+            swaggerUI("/api.json")
+        }
+    }
+
 }

@@ -12,9 +12,9 @@ import org.jetbrains.exposed.sql.charLength
 object ContractorsTable : IntIdTable("contractors") {
     val name = varchar("name", 50).check { it.charLength().between(2, 50) }
     val email = varchar("email", length = 255).uniqueIndex()
+    var password = varchar("password", length = 255).uniqueIndex()
     val workersAmount = integer("workers_amount").check { it greaterEq 0 }
     val rating = float("rating").check { it.between(0f, 10f) }
-    var password = varchar("password", length = 255).uniqueIndex()
 }
 
 class ContractorDao(id: EntityID<Int>) : IntEntity(id) {
@@ -49,7 +49,7 @@ data class ContractorDto(
 )
 
 @Serializable
-data class CreateContractorDto(
+data class RegisterContractorDto(
     val name: String,
     val email: String,
     val workersAmount: Int,

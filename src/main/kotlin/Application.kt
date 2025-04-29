@@ -19,3 +19,10 @@ fun Application.module(config: ApplicationConfig = environment.config) {
     configureSchemas(config)
     configureRouting()
 }
+
+// Список дел:
+// Составить документацию;
+// Доделать бд;
+// Доделать пути;
+// Сделать пагинацию
+// Сделать кэширование;

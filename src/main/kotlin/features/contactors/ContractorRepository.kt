@@ -11,7 +11,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 
 interface ContractorRepository {
-    suspend fun create(user: CreateContractorDto): ContractorDto
+    suspend fun create(user: RegisterContractorDto): ContractorDto
     suspend fun findAll(): List<ContractorDto>
     suspend fun findById(id: Int): ContractorDto?
     suspend fun findByEmail(email: String): ContractorDao?
@@ -20,7 +20,7 @@ interface ContractorRepository {
 }
 
 class ContractorRepositoryImpl() : ContractorRepository {
-    override suspend fun create(contractor: CreateContractorDto): ContractorDto = dbQuery {
+    override suspend fun create(contractor: RegisterContractorDto): ContractorDto = dbQuery {
         val workingSites = contractor.workingSitesIds?.let { ids ->
             WorkingSiteDao.find { WorkingSitesTable.id inList ids }.toList().also {
                 if (it.size != ids.size) throw NotFoundException("Some working sites not found")

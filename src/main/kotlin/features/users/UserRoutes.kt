@@ -2,10 +2,14 @@ package buildService.features.users
 
 import buildService.configuration.AccessForbiddenException
 import buildService.configuration.UserRole
+import buildService.shared.utils.getInfo
 import buildService.shared.utils.validateEmail
 import buildService.shared.utils.validateName
 import buildService.shared.utils.validatePassword
+import io.github.smiley4.ktoropenapi.delete
+import io.github.smiley4.ktoropenapi.get
 import io.github.smiley4.ktoropenapi.post
+import io.github.smiley4.ktoropenapi.put
 import io.github.smiley4.ktoropenapi.route
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -41,15 +45,15 @@ fun Route.userRoutes(userRepository: UserRepository) {
                 body<RegisterUserDto> { required = true }
             }
             response {
-                code(HttpStatusCode.OK) {
-                    body<UserDto> {
-                        required = true
-                    }
+                code(HttpStatusCode.Created) {
+                    body<UserDto>()
                     description = "Пользователь успешно создан"
                 }
                 code(HttpStatusCode.BadRequest) {
                     body<String> {
-                        required = true
+                        example("Почта уже занята") {
+                            value = "Email already in use"
+                        }
                     }
                     description = "Почта уже занята или другая ошибка"
                 }
@@ -65,42 +69,111 @@ fun Route.userRoutes(userRepository: UserRepository) {
         }
 
         // find all users
-        get {
+        get({
+            summary = "Получение всех пользователей"
+            description = "Позже сделаю пагинацию"
+            response {
+                code(HttpStatusCode.OK) {
+                    body<UserDto>()
+                    description = "Пользователи успешно получены"
+                }
+            }
+        }) {
             val users = userRepository.findAll()
             call.respond(HttpStatusCode.OK, users)
         }
 
 
         // routes for specific user
-        route("/{id}") {
-            // Read user
-            get {
-                val id =
-                    call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-                val user = userRepository.findById(id)
-                    ?: throw NotFoundException("User with ID $id not found")
-                call.respond(HttpStatusCode.OK, user)
-            }
-
-            // Update user
-            put {
-                val id =
-                    call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-                val user = call.receiveNullable<UpdateUserDto>()
-                    ?: throw IllegalArgumentException("Invalid body")
-                userRepository.update(id, user)
-                call.respond(HttpStatusCode.OK)
-            }
-
-            // Delete user
-            authenticate("jwt") {
-                delete {
-                    val principal = call.principal<JWTPrincipal>()
-                    val principalId = principal?.payload?.getClaim("id")?.asString()
-                    val role = principal?.payload?.getClaim("role")?.asString()
+        authenticate("jwt") {
+            route("/{id}") {
+                // Read user
+                get({
+                    summary = "Получение информации о пользователе"
+                    request {
+                        pathParameter<Int>("id") { required = true }
+                    }
+                    response {
+                        code(HttpStatusCode.OK) {
+                            body<UserDto>()
+                            description = "Пользователь найден"
+                        }
+                        code(HttpStatusCode.Forbidden) {
+                            description = "id не совпал с id пользователя"
+                        }
+                    }
+                }) {
+                    val principalResult = call.principal<JWTPrincipal>()!!.getInfo()
                     val id = call.parameters["id"]?.toInt()
                         ?: throw IllegalArgumentException("Invalid ID")
-                    if (role == UserRole.ADMIN.name || id.toString() == principalId) {
+                    if (principalResult.id == id.toString() || principalResult.role == UserRole.ADMIN.name) {
+                        val user = userRepository.findById(id)
+                            ?: throw NotFoundException("User with ID $id not found")
+                        call.respond(HttpStatusCode.OK, user)
+                    } else {
+                        throw AccessForbiddenException("Access Forbidden")
+                    }
+                }
+
+                // Update user
+                put({
+                    summary = "Обновление пользователя"
+                    request {
+                        body<UpdateUserDto> { required = true }
+                    }
+                    response {
+                        code(HttpStatusCode.OK) {
+                            description = "Пользователь успешно обновлён"
+                        }
+                        code(HttpStatusCode.BadRequest) {
+                            body<String> {
+                                example("Почта уже занята") {
+                                    value = "Email already in use"
+                                }
+                            }
+                            description = "Ошибка при составлении запроса"
+                        }
+                        code(HttpStatusCode.Forbidden) {
+                            description = "id не совпал с id пользователя"
+                        }
+                    }
+                }) {
+                    val principalResult = call.principal<JWTPrincipal>()!!.getInfo()
+                    val id = call.parameters["id"]?.toInt()
+                        ?: throw IllegalArgumentException("Invalid ID")
+                    val user = call.receiveNullable<UpdateUserDto>()
+                        ?: throw IllegalArgumentException("Invalid body")
+                    if (principalResult.id == id.toString() || principalResult.role == UserRole.ADMIN.name) {
+                        userRepository.update(id, user)
+                        call.respond(HttpStatusCode.OK)
+                    } else {
+                        throw AccessForbiddenException("Access Forbidden")
+                    }
+                }
+
+                // Delete user
+                delete(
+                    {
+                        summary = "удаление пользователя"
+                        request {
+                            pathParameter<Int>("id") { required = true }
+                        }
+                        response {
+                            code(HttpStatusCode.OK) {
+                                description = "Пользователь успешно обновлён"
+                            }
+                            code(HttpStatusCode.BadRequest) {
+                                description = "Ошибка при составлении запроса"
+                            }
+                            code(HttpStatusCode.Forbidden) {
+                                description = "id не совпал с id пользователя"
+                            }
+                        }
+                    }) {
+                    val principalResult = call.principal<JWTPrincipal>()!!.getInfo()
+                    val id = call.parameters["id"]?.toInt()
+                        ?: throw IllegalArgumentException("Invalid ID")
+                    if (principalResult.role == UserRole.ADMIN.name || principalResult.id == id.toString()) {
                         if (userRepository.delete(id) == false) {
                             throw NotFoundException("User with ID $id not found")
                         }

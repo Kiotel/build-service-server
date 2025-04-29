@@ -30,7 +30,8 @@ fun Application.configureRouting() {
                 val principal = call.principal<JWTPrincipal>()
                 val email = principal?.payload?.getClaim("email")?.asString()
                 val role = principal?.payload?.getClaim("role")?.asString()
-                call.respond(mapOf("email" to email, "role" to role))
+                val id = principal?.payload?.getClaim("id")?.asString()
+                call.respond(mapOf("id" to id, "email" to email, "role" to role))
             }
         }
         get("/") {

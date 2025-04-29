@@ -23,11 +23,12 @@ fun Application.configureHTTP() {
     }
     install(OpenApi) {
         this.info {
-            this.summary = "API для BuildService"
+            this.title = "API для BuildService"
             this.version = "0.1"
         }
         schemas {
-            generator = SchemaGenerator.kotlinx()
+            @Suppress("MISSING_DEPENDENCY_CLASS_IN_EXPRESSION_TYPE")
+            this.generator = SchemaGenerator.kotlinx()
         }
         security {
             // configure a basic-auth security scheme
@@ -39,7 +40,7 @@ fun Application.configureHTTP() {
             defaultSecuritySchemeNames("MySecurityScheme")
             // if no other response is documented for "401 Unauthorized", this information is used instead
             defaultUnauthorizedResponse {
-                description = "Unauthorized"
+                description = "Не авторизован"
             }
         }
     }

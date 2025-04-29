@@ -12,7 +12,6 @@ fun main(args: Array<String>) {
 
 fun Application.module(config: ApplicationConfig = environment.config) {
     val isTesting = config.property("isTesting").getString() == "true"
-    log.info("isTesting $isTesting")
     val dotenv = dotenv {
         this.filename =
             if (isTesting) "test.env" else "prod.env"

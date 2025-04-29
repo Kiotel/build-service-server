@@ -9,11 +9,11 @@
 ## проверить запуск
 
 ```shell
-   docker-compose ps
+   docker-compose -env-file ../../test.env ps
 ```
 
 ## остановить с помощью
 
 ```shell
-   docker compose down
+   docker compose -env-file ../../test.env down
 ```

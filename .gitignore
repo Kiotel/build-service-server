@@ -1,3 +1,5 @@
+prod.env
+test.env
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -35,6 +37,8 @@ out/
 ### VS Code ###
 .vscode/
 /db/postgres_data/
-/db/prod/.env
+/db/prod/.prod.env
 /db/prod/postgres_data/
 /db/test/postgres_data/
+/db/test/TEST_DB_DATA/
+/db/prod/PROD_DB_DATA/

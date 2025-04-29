@@ -4,17 +4,17 @@ import buildService.features.contactors.ContractorsTable
 import buildService.features.users.UsersTable
 import buildService.features.workingSites.WorkingSiteContractorsTable
 import buildService.features.workingSites.WorkingSitesTable
+import io.github.cdimascio.dotenv.Dotenv
 import io.ktor.server.application.*
-import io.ktor.server.config.*
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 
-fun Application.configureSchemas(config: ApplicationConfig) {
+fun Application.configureSchemas(dotenv: Dotenv) {
     val database = Database.connect(
-        url = config.property("storage.jdbcURL").getString(),
-        user = config.property("storage.user").getString(),
-        password = config.property("storage.password").getString()
+        url = "${dotenv["DB_DRIVER"]}://${dotenv["DB_URL"]}:${dotenv["POSTGRES_PUBLIC_PORT"]}/${dotenv["POSTGRES_DB"]}",
+        user = dotenv["POSTGRES_USER"],
+        password = dotenv["POSTGRES_PASSWORD"],
     )
     transaction(database) {
         SchemaUtils.create(

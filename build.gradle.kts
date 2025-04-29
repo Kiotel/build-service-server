@@ -48,4 +48,7 @@ dependencies {
     testImplementation("io.ktor:ktor-client-content-negotiation")
     implementation("io.github.smiley4:ktor-openapi:5.0.2")
     implementation("io.github.smiley4:ktor-swagger-ui:5.0.2")
+
+    // https://github.com/cdimascio/dotenv-kotlin
+    implementation("io.github.cdimascio:dotenv-kotlin:6.5.1")
 }

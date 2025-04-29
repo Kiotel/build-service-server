@@ -1,19 +1,12 @@
 ktor:
   application:
+    # noinspection KtorYamlConfig
     modules:
       - buildService.ApplicationKt.module
   deployment:
+    development: true
     port: 8080
     host: localhost
     shutdown:
       url: "shutdown"
-jwt:
-  secret: "secret"
-  domain: "https://jwt-provider-domain/"
-  audience: "jwt-audience"
-  realm: "ktor sample app"
-storage:
-  driverClassName: "org.postgresql.Driver"
-  jdbcURL: "jdbc:postgresql://localhost:12332/databaseProd"
-  user: "admin"
-  password: "322031"
+isTesting: false

@@ -1,5 +1,10 @@
 package buildService.configuration
 
+import buildService.configuration.JWTSecurity.jwtAudience
+import buildService.configuration.JWTSecurity.jwtIssuer
+import buildService.configuration.JWTSecurity.jwtRealm
+import buildService.configuration.JWTSecurity.jwtSecret
+import buildService.configuration.JWTSecurity.validityInMs
 import buildService.features.contactors.ContractorDao
 import buildService.features.contactors.ContractorRepository
 import buildService.features.users.UserDao
@@ -9,6 +14,7 @@ import buildService.shared.utils.validatePassword
 import buildService.shared.utils.verifyPasswords
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import io.github.cdimascio.dotenv.Dotenv
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -23,14 +29,22 @@ import java.util.*
 @Serializable
 data class LoginDto(val email: String, val password: String)
 
-// Security configuration constants
-private const val jwtAudience = "jwt-audience"
-private const val jwtIssuer = "your-issuer"  // Changed from domain to issuer
-private const val jwtRealm = "ktor sample app"
-private const val jwtSecret = "my-secret" // Use a strong secret in production
-private const val validityInMs = 3600000 * 24 // 24 hour
+object JWTSecurity {
+    lateinit var jwtAudience: String
+    lateinit var jwtIssuer: String
+    lateinit var jwtRealm: String
+    lateinit var jwtSecret: String
+    var validityInMs: Long = 3600 * 1000 // 1 час, хотя по идее это вообще не надо.
+    // Жалуется, что должно быть обязательно инициализировано
+}
 
-fun Application.configureSecurity() {
+fun Application.configureSecurity(dotenv: Dotenv) {
+    jwtAudience = dotenv["JWT_AUDIENCE"]
+    jwtIssuer = dotenv["JWT_ISSUER"]
+    jwtRealm = dotenv["JWT_REALM"]
+    jwtSecret = dotenv["JWT_SECRET"]
+    validityInMs = dotenv["JWT_VALIDITY_IN_MS"].toLong()
+
     authentication {
         jwt("jwt") {
             realm = jwtRealm

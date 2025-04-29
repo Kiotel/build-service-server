@@ -1,5 +1,7 @@
 services:
   postgres:
+    env_file:
+      - ../../test.env
     image: postgres:17.4
     container_name: build_service_${CONTAINER_NAME}
     environment:
@@ -9,7 +11,7 @@ services:
     ports:
       - ${POSTGRES_PORTS}
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+      - ./${POSTGRES_DATA_FOLDER_NAME}:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
       interval: 5s

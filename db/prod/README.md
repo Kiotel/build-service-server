@@ -3,17 +3,17 @@
 ## запускать с помощью
 
 ```shell
-  docker compose up -d
+  docker-compose --env-file ../../prod.env up -d
 ```
 
 ## проверить запуск
 
 ```shell
-   docker-compose ps
+   docker-compose --env-file ../../prod.env ps
 ```
 
 ## остановить с помощью
 
 ```shell
-   docker compose down
+   docker compose --env-file ../../prod.env down
 ```

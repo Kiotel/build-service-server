@@ -3,7 +3,7 @@
 ## запускать с помощью
 
 ```shell
-  docker compose up -d
+  docker-compose --env-file ../../test.env up -d
 ```
 
 ## проверить запуск

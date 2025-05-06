@@ -1,5 +1,8 @@
 package buildService.features.contactors
 
+import buildService.features.contactors.comments.ContractorCommentDto
+import buildService.features.contactors.comments.ContractorCommentsDao
+import buildService.features.contactors.comments.ContractorCommentsTable
 import buildService.features.workingSites.WorkingSiteContractorsTable
 import buildService.features.workingSites.WorkingSiteDao
 import kotlinx.serialization.Serializable
@@ -27,6 +30,7 @@ class ContractorDao(id: EntityID<Int>) : IntEntity(id) {
     var password by ContractorsTable.password
 
     var workingSites by WorkingSiteDao via WorkingSiteContractorsTable
+    val comments by ContractorCommentsDao referrersOn ContractorCommentsTable.contractorId
 
     fun toDto() = ContractorDto(
         id = this.id.value,
@@ -34,7 +38,8 @@ class ContractorDao(id: EntityID<Int>) : IntEntity(id) {
         email = this.email,
         workersAmount = this.workersAmount,
         rating = this.rating,
-        workingSitesIds = this.workingSites.map { it.id.value }.toList()
+        workingSitesIds = this.workingSites.map { it.id.value },
+        comments = this.comments.map { it.toDto() },
     )
 }
 
@@ -45,16 +50,16 @@ data class ContractorDto(
     val email: String,
     val workersAmount: Int,
     val rating: Float,
-    val workingSitesIds: List<Int>
+    val workingSitesIds: List<Int>,
+    val comments: List<ContractorCommentDto>
 )
 
 @Serializable
-data class RegisterContractorDto(
+data class CreateContractorDto(
     val name: String,
     val email: String,
     val workersAmount: Int,
     val password: String,
-    val workingSitesIds: List<Int>?
 )
 
 @Serializable

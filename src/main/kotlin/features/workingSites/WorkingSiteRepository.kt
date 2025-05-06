@@ -17,7 +17,7 @@ interface WorkingSiteRepository {
     suspend fun findAll(): List<WorkingSiteDto>
     suspend fun findById(id: Int): WorkingSiteDto?
     suspend fun update(id: Int, workingSiteDto: UpdateWorkingSiteDto)
-    suspend fun delete(id: Int)
+    suspend fun delete(id: Int): Boolean
 }
 
 class WorkingSiteRepositoryImpl() : WorkingSiteRepository {
@@ -58,9 +58,9 @@ class WorkingSiteRepositoryImpl() : WorkingSiteRepository {
         }
     }
 
-    override suspend fun delete(id: Int) {
-        dbQuery {
+    override suspend fun delete(id: Int): Boolean {
+        return dbQuery {
             UsersTable.deleteWhere { UsersTable.id.eq(id) }
-        }
+        } > 0
     }
 }

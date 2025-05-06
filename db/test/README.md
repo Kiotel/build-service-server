@@ -1,19 +1,19 @@
 # Инструкция к docker'у
 
-## запускать с помощью
+## Запускать с помощью
 
 ```shell
   docker-compose --env-file ../../test.env up -d
 ```
 
-## проверить запуск
+## Проверить запуск
 
 ```shell
-   docker-compose -env-file ../../test.env ps
+   docker-compose --env-file ../../test.env ps
 ```
 
-## остановить с помощью
+## Остановить с помощью
 
 ```shell
-   docker compose -env-file ../../test.env down
+   docker compose --env-file ../../test.env down
 ```

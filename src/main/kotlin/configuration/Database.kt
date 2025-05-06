@@ -1,6 +1,7 @@
 package buildService.configuration
 
 import buildService.features.contactors.ContractorsTable
+import buildService.features.contactors.comments.ContractorCommentsTable
 import buildService.features.users.UsersTable
 import buildService.features.workingSites.WorkingSiteContractorsTable
 import buildService.features.workingSites.WorkingSitesTable
@@ -21,7 +22,8 @@ fun Application.configureSchemas(dotenv: Dotenv) {
             UsersTable,
             ContractorsTable,
             WorkingSitesTable,
-            WorkingSiteContractorsTable
+            WorkingSiteContractorsTable,
+            ContractorCommentsTable
         )
     }
 }

@@ -1,13 +1,12 @@
 package buildService.features.workingSites
 
-import buildService.features.contactors.UpdateContractorDto
 import buildService.features.users.WorkingSiteRepository
 import buildService.shared.utils.validateName
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.plugins.requestvalidation.RequestValidation
-import io.ktor.server.plugins.requestvalidation.ValidationResult
-import io.ktor.server.request.receive
-import io.ktor.server.response.respond
+import io.ktor.http.*
+import io.ktor.server.plugins.*
+import io.ktor.server.plugins.requestvalidation.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.workingSitesRoutes(workingSiteRepository: WorkingSiteRepository) {
@@ -41,11 +40,12 @@ fun Route.workingSitesRoutes(workingSiteRepository: WorkingSiteRepository) {
 
 
         // routes for specific workingSite
-        route("/{id}") {
+        route("/{workingSiteId}") {
             // Find workingSite by id
             get {
                 val id =
-                    call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
+                    call.parameters["workingSiteId"]?.toInt()
+                        ?: throw BadRequestException("Invalid ID")
                 val workingSite = workingSiteRepository.findById(id)
                 if (workingSite != null) {
                     call.respond(HttpStatusCode.OK, workingSite)
@@ -57,7 +57,8 @@ fun Route.workingSitesRoutes(workingSiteRepository: WorkingSiteRepository) {
             // Update workingSite
             put {
                 val id =
-                    call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
+                    call.parameters["workingSiteId"]?.toInt()
+                        ?: throw BadRequestException("Invalid ID")
                 val workingSite = call.receive<UpdateWorkingSiteDto>()
                 workingSiteRepository.update(id, workingSite)
                 call.respond(HttpStatusCode.OK)
@@ -66,9 +67,12 @@ fun Route.workingSitesRoutes(workingSiteRepository: WorkingSiteRepository) {
             // Delete workingSite
             delete {
                 val id =
-                    call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-                workingSiteRepository.delete(id)
-                call.respond(HttpStatusCode.OK)
+                    call.parameters["workingSiteId"]?.toInt()
+                        ?: throw BadRequestException("Invalid ID")
+                if (!workingSiteRepository.delete(id)) {
+                    throw NotFoundException("Working site with ID $id not found")
+                }
+                call.respond(HttpStatusCode.NoContent)
             }
         }
     }

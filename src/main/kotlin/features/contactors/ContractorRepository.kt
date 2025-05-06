@@ -1,40 +1,27 @@
 package buildService.features.contactors
 
-import buildService.features.users.UsersTable
-import buildService.features.workingSites.WorkingSiteDao
-import buildService.features.workingSites.WorkingSitesTable
 import buildService.shared.utils.dbQuery
 import buildService.shared.utils.hashPassword
-import io.ktor.server.plugins.*
-import org.jetbrains.exposed.sql.SizedCollection
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 
 interface ContractorRepository {
-    suspend fun create(user: RegisterContractorDto): ContractorDto
+    suspend fun create(user: CreateContractorDto): ContractorDto
     suspend fun findAll(): List<ContractorDto>
     suspend fun findById(id: Int): ContractorDto?
     suspend fun findByEmail(email: String): ContractorDao?
-    suspend fun update(id: Int, contractorDto: UpdateContractorDto)
-    suspend fun delete(id: Int)
+    suspend fun update(id: Int, contractorDto: UpdateContractorDto): ContractorDto?
+    suspend fun delete(id: Int): Boolean
 }
 
 class ContractorRepositoryImpl() : ContractorRepository {
-    override suspend fun create(contractor: RegisterContractorDto): ContractorDto = dbQuery {
-        val workingSites = contractor.workingSitesIds?.let { ids ->
-            WorkingSiteDao.find { WorkingSitesTable.id inList ids }.toList().also {
-                if (it.size != ids.size) throw NotFoundException("Some working sites not found")
-            }
-        } ?: emptyList()
-
+    override suspend fun create(contractor: CreateContractorDto): ContractorDto = dbQuery {
         ContractorDao.new {
             name = contractor.name
             workersAmount = contractor.workersAmount
             email = contractor.email
             password = contractor.password.hashPassword()
             rating = 7f
-        }.apply {
-            this.workingSites = SizedCollection(workingSites)
         }.toDto()
     }
 
@@ -56,20 +43,20 @@ class ContractorRepositoryImpl() : ContractorRepository {
         }
     }
 
-    override suspend fun update(id: Int, contractor: UpdateContractorDto) {
-        dbQuery {
+    override suspend fun update(id: Int, contractor: UpdateContractorDto): ContractorDto? {
+        return dbQuery {
             ContractorDao.findByIdAndUpdate(id) { old ->
                 contractor.name.let { old.name = it }
                 contractor.email.let { old.email = it }
                 contractor.workersAmount.let { old.workersAmount = it }
                 contractor.rating.let { old.rating = it }
-            }
+            }?.toDto()
         }
     }
 
-    override suspend fun delete(id: Int) {
-        dbQuery {
-            UsersTable.deleteWhere { UsersTable.id.eq(id) }
-        }
+    override suspend fun delete(contractorId: Int): Boolean {
+        return dbQuery {
+            ContractorsTable.deleteWhere { id.eq(contractorId) }
+        } > 0
     }
 }

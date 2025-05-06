@@ -51,9 +51,9 @@ class UserRepositoryImpl() : UserRepository {
         }
     }
 
-    override suspend fun delete(id: Int): Boolean {
+    override suspend fun delete(userId: Int): Boolean {
         return dbQuery {
-            UsersTable.deleteWhere { UsersTable.id.eq(id) }
+            UsersTable.deleteWhere { id.eq(userId) }
         } > 0
     }
 }

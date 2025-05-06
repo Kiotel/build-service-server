@@ -2,6 +2,8 @@ package buildService.di
 
 import buildService.features.contactors.ContractorRepository
 import buildService.features.contactors.ContractorRepositoryImpl
+import buildService.features.contactors.comments.ContractorCommentsRepository
+import buildService.features.contactors.comments.ContractorCommentsRepositoryImpl
 import buildService.features.users.UserRepository
 import buildService.features.users.UserRepositoryImpl
 import buildService.features.users.WorkingSiteRepository
@@ -26,6 +28,10 @@ fun Application.configureDi() {
         }
         singleOf(::WorkingSiteRepositoryImpl) {
             bind<WorkingSiteRepository>()
+            createdAtStart()
+        }
+        singleOf(::ContractorCommentsRepositoryImpl) {
+            bind<ContractorCommentsRepository>()
             createdAtStart()
         }
     }

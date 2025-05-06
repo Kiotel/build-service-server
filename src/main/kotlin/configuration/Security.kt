@@ -83,6 +83,7 @@ fun Route.authRoutes(userRepository: UserRepository, contractorRepository: Contr
         }
         post {
             val loginUserDto = call.receive<LoginDto>()
+            environment.log.info("Got loginDto: $loginUserDto")
             var role: UserRole = UserRole.USER
             var user: UserDao? = null
             var contractor: ContractorDao? = null
@@ -90,6 +91,7 @@ fun Route.authRoutes(userRepository: UserRepository, contractorRepository: Contr
                 role = UserRole.ADMIN
             } else {
                 user = userRepository.findByEmail(loginUserDto.email)
+                environment.log.info("Found user: $user")
                 if (user == null) {
                     contractor = contractorRepository.findByEmail(loginUserDto.email)
                     if (contractor != null) {

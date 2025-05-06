@@ -21,23 +21,22 @@ import io.ktor.server.routing.*
 fun Route.contractorsRoutes(contractorRepository: ContractorRepository) {
     route("/contractors") {
         install(RequestValidation) {
-            validate<UpdateContractorDto> {
+            validate<CreateContractorDto> {
                 val errors = validateName(it.name)
                 if (errors.isEmpty()) ValidationResult.Valid
                 else ValidationResult.Invalid(errors)
             }
-            validate<RegisterContractorDto> {
+            validate<UpdateContractorDto> {
                 val errors = validateName(it.name)
                 if (errors.isEmpty()) ValidationResult.Valid
                 else ValidationResult.Invalid(errors)
             }
         }
 
-        // Create contractor
         post({
             summary = "Создать новую бригаду"
             request {
-                body<RegisterContractorDto> { required = true }
+                body<CreateContractorDto> { required = true }
             }
             response {
                 code(HttpStatusCode.Created) {
@@ -54,12 +53,11 @@ fun Route.contractorsRoutes(contractorRepository: ContractorRepository) {
                 }
             }
         }) {
-            val contractor = call.receive<RegisterContractorDto>()
+            val contractor = call.receive<CreateContractorDto>()
             val newContractor = contractorRepository.create(contractor)
             call.respond(HttpStatusCode.Created, newContractor)
         }
 
-        // Find all contractors
         get({
             summary = "Получить все бригады"
             description = "Также пагинация будет добавлена"
@@ -75,13 +73,11 @@ fun Route.contractorsRoutes(contractorRepository: ContractorRepository) {
         }
 
         authenticate("jwt") {
-            // Routes for specific contractor
-            route("/{id}") {
-                // Read contractor
+            route("/{contractorId}") {
                 get({
                     summary = "Получить информацию о бригаде"
                     request {
-                        pathParameter<Int>("id") { required = true }
+                        pathParameter<Int>("contractorId") { required = true }
                     }
                     response {
                         code(HttpStatusCode.OK) {
@@ -100,7 +96,7 @@ fun Route.contractorsRoutes(contractorRepository: ContractorRepository) {
                     }
                 }) {
                     val principalResult = call.principal<JWTPrincipal>()!!.getInfo()
-                    val id = call.parameters["id"]?.toInt()
+                    val id = call.parameters["contractorId"]?.toInt()
                         ?: throw BadRequestException("Invalid ID format")
                     if (principalResult.id == id.toString() || principalResult.role != UserRole.ADMIN.name) {
                         val contractor = contractorRepository.findById(id)
@@ -109,11 +105,10 @@ fun Route.contractorsRoutes(contractorRepository: ContractorRepository) {
                     }
                 }
 
-                // Update contractor
                 put({
                     summary = "Обновить бригаду"
                     request {
-                        pathParameter<Int>("id") { required = true }
+                        pathParameter<Int>("contractorId") { required = true }
                         body<UpdateContractorDto> { required = true }
                     }
                     response {
@@ -134,22 +129,22 @@ fun Route.contractorsRoutes(contractorRepository: ContractorRepository) {
                     }
                 }) {
                     val principalResult = call.principal<JWTPrincipal>()!!.getInfo()
-                    val id = call.parameters["id"]?.toInt()
+                    val id = call.parameters["contractorId"]?.toInt()
                         ?: throw BadRequestException("Invalid ID format")
                     val contractor = call.receive<UpdateContractorDto>()
                     if (principalResult.id == id.toString() || principalResult.role == UserRole.ADMIN.name) {
-                        contractorRepository.update(id, contractor)
-                        call.respond(HttpStatusCode.OK)
+                        val result = contractorRepository.update(id, contractor)
+                            ?: throw NotFoundException("Contract not found")
+                        call.respond(HttpStatusCode.OK, result)
                     } else {
                         throw AccessForbiddenException("Access forbidden")
                     }
                 }
 
-                // Delete contractor
                 delete({
                     summary = "Удалить бригаду"
                     request {
-                        pathParameter<Int>("id") { required = true }
+                        pathParameter<Int>("contractorId") { required = true }
                     }
                     response {
                         code(HttpStatusCode.OK) {
@@ -164,11 +159,15 @@ fun Route.contractorsRoutes(contractorRepository: ContractorRepository) {
                     }
                 }) {
                     val principalResult = call.principal<JWTPrincipal>()!!.getInfo()
-                    val id = call.parameters["id"]?.toInt()
+                    val id = call.parameters["contractorId"]?.toInt()
                         ?: throw BadRequestException("Invalid ID format")
                     if (principalResult.id == id.toString() || principalResult.role == UserRole.ADMIN.name) {
-                        contractorRepository.delete(id)
-                        call.respond(HttpStatusCode.OK)
+                        val result = contractorRepository.delete(id)
+                        if (result) {
+                            call.respond(HttpStatusCode.NoContent)
+                        } else {
+                            throw NotFoundException("Contractor with ID $id not found")
+                        }
                     } else {
                         throw AccessForbiddenException("Access forbidden")
                     }

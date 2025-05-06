@@ -37,7 +37,6 @@ fun Route.userRoutes(userRepository: UserRepository) {
             }
         }
 
-        // Create user
         post({
             summary = "Создание пользователя"
             description = "Хотя правильнее назвать регистрация"
@@ -83,15 +82,14 @@ fun Route.userRoutes(userRepository: UserRepository) {
             call.respond(HttpStatusCode.OK, users)
         }
 
-
         // routes for specific user
         authenticate("jwt") {
-            route("/{id}") {
+            route("/{userId}") {
                 // Read user
                 get({
                     summary = "Получение информации о пользователе"
                     request {
-                        pathParameter<Int>("id") { required = true }
+                        pathParameter<Int>("userId") { required = true }
                     }
                     response {
                         code(HttpStatusCode.OK) {
@@ -104,8 +102,8 @@ fun Route.userRoutes(userRepository: UserRepository) {
                     }
                 }) {
                     val principalResult = call.principal<JWTPrincipal>()!!.getInfo()
-                    val id = call.parameters["id"]?.toInt()
-                        ?: throw IllegalArgumentException("Invalid ID")
+                    val id = call.parameters["userId"]?.toInt()
+                        ?: throw BadRequestException("Invalid ID")
                     if (principalResult.id == id.toString() || principalResult.role == UserRole.ADMIN.name) {
                         val user = userRepository.findById(id)
                             ?: throw NotFoundException("User with ID $id not found")
@@ -139,10 +137,10 @@ fun Route.userRoutes(userRepository: UserRepository) {
                     }
                 }) {
                     val principalResult = call.principal<JWTPrincipal>()!!.getInfo()
-                    val id = call.parameters["id"]?.toInt()
-                        ?: throw IllegalArgumentException("Invalid ID")
+                    val id = call.parameters["userId"]?.toInt()
+                        ?: throw BadRequestException("Invalid ID")
                     val user = call.receiveNullable<UpdateUserDto>()
-                        ?: throw IllegalArgumentException("Invalid body")
+                        ?: throw BadRequestException("Invalid body")
                     if (principalResult.id == id.toString() || principalResult.role == UserRole.ADMIN.name) {
                         userRepository.update(id, user)
                         call.respond(HttpStatusCode.OK)
@@ -151,12 +149,11 @@ fun Route.userRoutes(userRepository: UserRepository) {
                     }
                 }
 
-                // Delete user
                 delete(
                     {
                         summary = "удаление пользователя"
                         request {
-                            pathParameter<Int>("id") { required = true }
+                            pathParameter<Int>("userId") { required = true }
                         }
                         response {
                             code(HttpStatusCode.OK) {
@@ -171,8 +168,8 @@ fun Route.userRoutes(userRepository: UserRepository) {
                         }
                     }) {
                     val principalResult = call.principal<JWTPrincipal>()!!.getInfo()
-                    val id = call.parameters["id"]?.toInt()
-                        ?: throw IllegalArgumentException("Invalid ID")
+                    val id = call.parameters["userId"]?.toInt()
+                        ?: throw BadRequestException("Invalid ID")
                     if (principalResult.role == UserRole.ADMIN.name || principalResult.id == id.toString()) {
                         if (userRepository.delete(id) == false) {
                             throw NotFoundException("User with ID $id not found")
@@ -180,7 +177,7 @@ fun Route.userRoutes(userRepository: UserRepository) {
                     } else {
                         throw AccessForbiddenException("Access denied")
                     }
-                    call.respond(HttpStatusCode.OK)
+                    call.respond(HttpStatusCode.NoContent)
                 }
             }
         }

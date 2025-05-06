@@ -70,7 +70,7 @@ class UserRoutesTest {
                 bearerAuth(adminToken)
             }
             assertEquals(
-                HttpStatusCode.OK, response.status, "Couldn't delete user with ID ${user.id}"
+                HttpStatusCode.NoContent, response.status, "Couldn't delete user with ID ${user.id}"
             )
             logger.info("Deleted user with id ${user.id}")
         }
@@ -118,7 +118,11 @@ class UserRoutesTest {
         val response = client.delete("/users/$userId") {
             bearerAuth(userToken)
         }
-        assertEquals(HttpStatusCode.OK, response.status, "Couldn't delete user with ID $userId")
+        assertEquals(
+            HttpStatusCode.NoContent,
+            response.status,
+            "Couldn't delete user with ID $userId"
+        )
         logger.info("Successfully deleted user with ID $userId")
     }
 }

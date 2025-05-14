@@ -30,5 +30,5 @@ fun Application.module(config: ApplicationConfig = environment.config) {
 // Составить документацию;
 // Доделать бд;
 // Доделать пути;
-// Сделать пагинацию
+// Сделать пагинацию;
 // Сделать кэширование;

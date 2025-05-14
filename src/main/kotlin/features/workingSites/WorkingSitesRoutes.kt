@@ -2,6 +2,11 @@ package buildService.features.workingSites
 
 import buildService.features.users.WorkingSiteRepository
 import buildService.shared.utils.validateName
+import io.github.smiley4.ktoropenapi.delete
+import io.github.smiley4.ktoropenapi.get
+import io.github.smiley4.ktoropenapi.post
+import io.github.smiley4.ktoropenapi.put
+import io.github.smiley4.ktoropenapi.route
 import io.ktor.http.*
 import io.ktor.server.plugins.*
 import io.ktor.server.plugins.requestvalidation.*
@@ -13,36 +18,77 @@ fun Route.workingSitesRoutes(workingSiteRepository: WorkingSiteRepository) {
     route("/workingSites") {
         install(RequestValidation) {
             validate<UpdateWorkingSiteDto> {
-                var errors = validateName(it.name)
+                val errors = validateName(it.name)
                 if (errors.isEmpty()) ValidationResult.Valid
                 else ValidationResult.Invalid(errors)
             }
             validate<CreateWorkingSiteDto> {
-                var errors = validateName(it.name)
+                val errors = validateName(it.name)
                 if (it.userId < 0) errors.add("user id must be non-negative and not null")
                 if (errors.isEmpty()) ValidationResult.Valid
                 else ValidationResult.Invalid(errors)
             }
         }
 
-        // Create contractor
-        post {
+        post({
+            summary = "Создать новый объект"
+            request {
+                body<CreateWorkingSiteDto> { required = true }
+            }
+            response {
+                code(HttpStatusCode.Created) {
+                    body<WorkingSiteDto>()
+                    description = "Объект успешно создан"
+                }
+                code(HttpStatusCode.BadRequest) {
+                    body<String> {
+                        example("Неправильная длина имени") {
+                            value = validateName("a").joinToString()
+                        }
+                    }
+                    description = "Запрос составлен неправильно"
+                }
+            }
+        }) {
             val workingSite = call.receive<CreateWorkingSiteDto>()
             val id = workingSiteRepository.create(workingSite)
             call.respond(HttpStatusCode.Created, id)
         }
 
-        // find all workingSites
-        get {
+        get({
+            summary = "Получить все объекты"
+            description = "В будущем будет добавлена пагинация"
+            response {
+                code(HttpStatusCode.OK) {
+                    body<List<WorkingSiteDto>>()
+                    description = "Успешно получен список объектов"
+                }
+            }
+        }) {
             val workingSites = workingSiteRepository.findAll()
             call.respond(HttpStatusCode.OK, workingSites)
         }
 
 
-        // routes for specific workingSite
         route("/{workingSiteId}") {
-            // Find workingSite by id
-            get {
+            get({
+                summary = "Получить информацию об объекте"
+                request {
+                    pathParameter<Int>("workingSiteId") { required = true }
+                }
+                response {
+                    code(HttpStatusCode.OK) {
+                        body<WorkingSiteDto>()
+                        description = "Объект найден"
+                    }
+                    code(HttpStatusCode.NotFound) {
+                        description = "Такой объект не найден"
+                    }
+                    code(HttpStatusCode.BadRequest) {
+                        description = "Запрос составлен неправильно"
+                    }
+                }
+            }) {
                 val id =
                     call.parameters["workingSiteId"]?.toInt()
                         ?: throw BadRequestException("Invalid ID")
@@ -54,8 +100,29 @@ fun Route.workingSitesRoutes(workingSiteRepository: WorkingSiteRepository) {
                 }
             }
 
-            // Update workingSite
-            put {
+            put({
+                summary = "Обновить объект"
+                request {
+                    pathParameter<Int>("workingSiteId") { required = true }
+                    body<UpdateWorkingSiteDto> { required = true }
+                }
+                response {
+                    code(HttpStatusCode.OK) {
+                        description = "Объект успешно обновлен"
+                    }
+                    code(HttpStatusCode.BadRequest) {
+                        body<String> {
+                            example("Неправильная длина имени") {
+                                value = validateName("a").joinToString()
+                            }
+                        }
+                        description = "Запрос составлен неправильно"
+                    }
+                    code(HttpStatusCode.NotFound) {
+                        description = "Такой объект не найден"
+                    }
+                }
+            }) {
                 val id =
                     call.parameters["workingSiteId"]?.toInt()
                         ?: throw BadRequestException("Invalid ID")
@@ -64,8 +131,23 @@ fun Route.workingSitesRoutes(workingSiteRepository: WorkingSiteRepository) {
                 call.respond(HttpStatusCode.OK)
             }
 
-            // Delete workingSite
-            delete {
+            delete({
+                summary = "Удалить объект"
+                request {
+                    pathParameter<Int>("workingSiteId") { required = true }
+                }
+                response {
+                    code(HttpStatusCode.NoContent) {
+                        description = "Объект успешно удален"
+                    }
+                    code(HttpStatusCode.BadRequest) {
+                        description = "Запрос составлен неправильно"
+                    }
+                    code(HttpStatusCode.NotFound) {
+                        description = "Такой объект не найден"
+                    }
+                }
+            }) {
                 val id =
                     call.parameters["workingSiteId"]?.toInt()
                         ?: throw BadRequestException("Invalid ID")

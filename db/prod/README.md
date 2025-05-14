@@ -15,5 +15,5 @@
 ## Остановить с помощью
 
 ```shell
-   docker compose --env-file ../../prod.env down
+   docker-compose --env-file ../../prod.env down
 ```

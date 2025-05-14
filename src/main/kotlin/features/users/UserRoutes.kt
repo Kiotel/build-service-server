@@ -50,8 +50,8 @@ fun Route.userRoutes(userRepository: UserRepository) {
                 }
                 code(HttpStatusCode.BadRequest) {
                     body<String> {
-                        example("Почта уже занята") {
-                            value = "Email already in use"
+                        example("Неправильный формат почты") {
+                            value = validateEmail("invalid").joinToString()
                         }
                     }
                     description = "Почта уже занята или другая ошибка"
@@ -125,8 +125,8 @@ fun Route.userRoutes(userRepository: UserRepository) {
                         }
                         code(HttpStatusCode.BadRequest) {
                             body<String> {
-                                example("Почта уже занята") {
-                                    value = "Email already in use"
+                                example("Неправильный формат почты") {
+                                    value = validateEmail("invalid").joinToString()
                                 }
                             }
                             description = "Ошибка при составлении запроса"
@@ -151,13 +151,13 @@ fun Route.userRoutes(userRepository: UserRepository) {
 
                 delete(
                     {
-                        summary = "удаление пользователя"
+                        summary = "Удаление пользователя"
                         request {
                             pathParameter<Int>("userId") { required = true }
                         }
                         response {
-                            code(HttpStatusCode.OK) {
-                                description = "Пользователь успешно обновлён"
+                            code(HttpStatusCode.NoContent) {
+                                description = "Пользователь успешно удалён"
                             }
                             code(HttpStatusCode.BadRequest) {
                                 description = "Ошибка при составлении запроса"

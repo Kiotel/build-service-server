@@ -56,8 +56,11 @@ fun Route.contractorsCommentsRoutes(
                             body<ContractorCommentDto>(); description = "Комментарий успешно создан"
                         }
                         code(HttpStatusCode.BadRequest) {
-                            body<String>(); description =
-                            "Невалидный текст комментария или неверный ID бригады"
+                            body<String> {
+                                example("Невалидный текст комментария или неверный ID бригады") {
+                                    value = "Invalid Contractor ID format in path"
+                                }
+                            }
                         }
                         code(HttpStatusCode.NotFound) {
                             description = "Бригада с указанным ID не найдена"
@@ -141,12 +144,14 @@ fun Route.contractorsCommentsRoutes(
                 }
                 response {
                     code(HttpStatusCode.OK) {
-                        body<ContractorCommentDto>(); description =
-                        "Комментарий успешно обновлен"
+                        body<ContractorCommentDto>(); description = "Комментарий успешно обновлен"
                     }
                     code(HttpStatusCode.BadRequest) {
-                        body<String>(); description =
-                        "Невалидный текст комментария или неверный ID"
+                        body<String> {
+                            example("Невалидный текст комментария или неверный ID") {
+                                value = "Invalid Comment ID format in path"
+                            }
+                        }
                     }
                     code(HttpStatusCode.NotFound) {
                         description = "Комментарий с указанным ID не найден"
@@ -169,9 +174,8 @@ fun Route.contractorsCommentsRoutes(
                     ?: throw NotFoundException("Comment with ID $commentId not found")
 
                 if (principalResult.id == foundComment.userId.toString() || principalResult.role == UserRole.ADMIN.name) {
-                    val updatedComment =
-                        contractorCommentsRepository.update(commentId, updateDto)
-                            ?: throw NotFoundException("Comment with ID $commentId not found during update attempt") // Should be rare
+                    val updatedComment = contractorCommentsRepository.update(commentId, updateDto)
+                        ?: throw NotFoundException("Comment with ID $commentId not found during update attempt") // Should be rare
                     call.respond(HttpStatusCode.OK, updatedComment)
                 } else {
                     throw AccessForbiddenException("User not authorized to update comment $commentId")

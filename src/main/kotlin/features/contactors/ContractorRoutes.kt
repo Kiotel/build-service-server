@@ -45,8 +45,8 @@ fun Route.contractorsRoutes(contractorRepository: ContractorRepository) {
                 }
                 code(HttpStatusCode.BadRequest) {
                     body<String> {
-                        example("Неправильная длина имени") {
-                            value = "Name length must be from 2 to 50"
+                        example("Неправильная длина ") {
+                            value = validateName("a")
                         }
                     }
                     description = "Запрос составлен не правильно"
@@ -82,7 +82,7 @@ fun Route.contractorsRoutes(contractorRepository: ContractorRepository) {
                     response {
                         code(HttpStatusCode.OK) {
                             body<ContractorDto>()
-                            description = "Бригида найдена"
+                            description = "Бригада найдена"
                         }
                         code(HttpStatusCode.NotFound) {
                             description = "Такой бригады не найдено"
@@ -119,7 +119,7 @@ fun Route.contractorsRoutes(contractorRepository: ContractorRepository) {
                             description = "Запрос составлен неправильно"
                             body<String> {
                                 example("Неправильная длина имени") {
-                                    value = "Name length must be from 2 to 50"
+                                    value = validateName("a").joinToString()
                                 }
                             }
                         }
@@ -147,7 +147,7 @@ fun Route.contractorsRoutes(contractorRepository: ContractorRepository) {
                         pathParameter<Int>("contractorId") { required = true }
                     }
                     response {
-                        code(HttpStatusCode.OK) {
+                        code(HttpStatusCode.NoContent) {
                             description = "Бригада успешно удалена"
                         }
                         code(HttpStatusCode.BadRequest) {

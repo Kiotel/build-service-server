@@ -1,0 +1,15 @@
+include:
+  - /db/prod/docker-compose.yml
+
+services:
+  web:
+    env_file:
+      - ./prod.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "12321:12321"

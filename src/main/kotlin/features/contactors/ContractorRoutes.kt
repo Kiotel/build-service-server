@@ -68,6 +68,7 @@ fun Route.contractorsRoutes(contractorRepository: ContractorRepository) {
                 }
             }
         }) {
+            environment.log.info("aaaaaaaaa")
             val contractors = contractorRepository.findAll()
             call.respond(HttpStatusCode.OK, contractors)
         }

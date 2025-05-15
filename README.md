@@ -16,3 +16,16 @@
 2025-04-29 15:18:52.620 [main] INFO Application - Responding at http://localhost:8080
 
 Также есть тесты, для них нужно запускать ./db/test
+
+## Для запуска в docker надо
+
+```shell
+  ./gradlew buildFatJar
+  docker-compose --env-file prod.env up -d
+```
+
+## Остановить с помощью
+
+```shell
+   docker-compose --env-file prod.env down
+```

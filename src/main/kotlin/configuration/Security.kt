@@ -97,7 +97,7 @@ fun Route.authRoutes(userRepository: UserRepository, contractorRepository: Contr
                     }
                 }
             }
-            var id = user?.id?.value ?: contractor?.id?.value ?: -1
+            val id = user?.id?.value ?: contractor?.id?.value ?: -1
             if (user != null || contractor != null || role == UserRole.ADMIN) {
                 val password =
                     if (role == UserRole.ADMIN) "1" else user?.password ?: contractor!!.password

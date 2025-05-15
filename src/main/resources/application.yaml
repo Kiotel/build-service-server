@@ -5,8 +5,8 @@ ktor:
       - buildService.ApplicationKt.module
   deployment:
     development: true
-    port: 8080
-    host: localhost
+    port: 12321
+    host: 0.0.0.0
     shutdown:
       url: "shutdown"
 isTesting: false

@@ -6,7 +6,7 @@ fun String.hashPassword(): String {
     return BCrypt.withDefaults().hashToString(12, this.toCharArray()).toString()
 }
 
-fun verifyPasswords(password1: String, password2: String): Boolean {
-    val result = BCrypt.verifyer().verify(password1.toCharArray(), password2.toCharArray())
+fun verifyPasswords(password: String, hashedPassword: String): Boolean {
+    val result = BCrypt.verifyer().verify(password.toCharArray(), hashedPassword.toCharArray())
     return result.verified
 }

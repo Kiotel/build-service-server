@@ -20,7 +20,6 @@
 ## Для запуска в docker надо
 
 ```shell
-  ./gradlew buildFatJar
   docker-compose --env-file prod.env up -d
 ```
 

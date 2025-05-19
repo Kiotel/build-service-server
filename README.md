@@ -1,30 +1,35 @@
-# Запуск
+# 1-й вариант запуска:
 
-Для этого надо:
-
-* Склонировать проект
+* Клонировать проект
 * Открыть его(желательно jetbrains IDEA Ultimate)
 * Синхронизировать Gradle
-* Заполнить prod.env или test.env(есть example.env)
-* Запустить бд в ./db/prod (Там тоже есть readme)
+* Заполнить prod.env или test.env(тестовое необязательно)(есть example.env)
 * Можно запускать сервер
 
-## При удачном запуске будет:
+### При удачном запуске будет:
 
 2025-04-29 15:18:51.557 [main] INFO  [Koin] - Started 6 definitions in 0.7945 ms  
 2025-04-29 15:18:52.158 [main] INFO Application - Application started in 1.164 seconds.  
 2025-04-29 15:18:52.620 [main] INFO Application - Responding at http://localhost:8080
 
-Также есть тесты, для них нужно запускать ./db/test
+# 2-й вариант запуска:
 
-## Для запуска в docker надо
+* Также клонировать проект
+* Иметь docker
+* Запустить с помощью команды
+
+## Запуск в docker
 
 ```shell
   docker-compose --env-file prod.env up -d
 ```
 
-## Остановить с помощью
+### Остановить с помощью
 
 ```shell
    docker-compose --env-file prod.env down
 ```
+
+## P.S
+
+Также есть тесты(хоть и мало)

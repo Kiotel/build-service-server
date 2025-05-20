@@ -2,6 +2,7 @@ package buildService.features.users
 
 import buildService.configuration.AccessForbiddenException
 import buildService.configuration.UserRole
+import buildService.features.useCases.CheckEmail
 import buildService.shared.utils.getInfo
 import buildService.shared.utils.validateEmail
 import buildService.shared.utils.validateName
@@ -20,11 +21,12 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.userRoutes(userRepository: UserRepository) {
+fun Route.userRoutes(userRepository: UserRepository, checkEmail: CheckEmail) {
     route("users") {
         install(RequestValidation) {
             validate<UpdateUserDto> {
                 val errors = validateName(it.name)
+                errors.addAll(validateEmail(it.email))
                 if (errors.isEmpty()) ValidationResult.Valid
                 else ValidationResult.Invalid(errors)
             }
@@ -59,7 +61,7 @@ fun Route.userRoutes(userRepository: UserRepository) {
             }
         }) {
             val user = call.receive<RegisterUserDto>()
-            userRepository.findByEmail(user.email)?.let {
+            if (checkEmail(user.email)) {
                 throw BadRequestException("Email already in use")
             }
             val result = userRepository.create(user)
@@ -67,7 +69,6 @@ fun Route.userRoutes(userRepository: UserRepository) {
 
         }
 
-        // find all users
         get({
             summary = "Получение всех пользователей"
             description = "Позже сделаю пагинацию"
@@ -113,7 +114,6 @@ fun Route.userRoutes(userRepository: UserRepository) {
                     }
                 }
 
-                // Update user
                 put({
                     summary = "Обновление пользователя"
                     request {
@@ -131,19 +131,28 @@ fun Route.userRoutes(userRepository: UserRepository) {
                             }
                             description = "Ошибка при составлении запроса"
                         }
+                        code(HttpStatusCode.NotFound) {
+                            description = "Пользователь не найден"
+                        }
                         code(HttpStatusCode.Forbidden) {
-                            description = "id не совпал с id пользователя"
+                            description = "Доступ запрещен"
                         }
                     }
                 }) {
                     val principalResult = call.principal<JWTPrincipal>()!!.getInfo()
                     val id = call.parameters["userId"]?.toInt()
                         ?: throw BadRequestException("Invalid ID")
-                    val user = call.receiveNullable<UpdateUserDto>()
+                    val updateUserDto = call.receiveNullable<UpdateUserDto>()
                         ?: throw BadRequestException("Invalid body")
                     if (principalResult.id == id.toString() || principalResult.role == UserRole.ADMIN.name) {
-                        userRepository.update(id, user)
-                        call.respond(HttpStatusCode.OK)
+                        if (principalResult.email != updateUserDto.email) {
+                            if (checkEmail(updateUserDto.email)) {
+                                throw BadRequestException("Email already in use")
+                            }
+                        }
+                        val result = userRepository.update(id, updateUserDto)
+                            ?: throw NotFoundException("User with ID $id not found")
+                        call.respond(HttpStatusCode.OK, result)
                     } else {
                         throw AccessForbiddenException("Access Forbidden")
                     }
@@ -171,13 +180,13 @@ fun Route.userRoutes(userRepository: UserRepository) {
                     val id = call.parameters["userId"]?.toInt()
                         ?: throw BadRequestException("Invalid ID")
                     if (principalResult.role == UserRole.ADMIN.name || principalResult.id == id.toString()) {
-                        if (userRepository.delete(id) == false) {
+                        if (!userRepository.delete(id)) {
                             throw NotFoundException("User with ID $id not found")
                         }
+                        call.respond(HttpStatusCode.NoContent)
                     } else {
                         throw AccessForbiddenException("Access denied")
                     }
-                    call.respond(HttpStatusCode.NoContent)
                 }
             }
         }

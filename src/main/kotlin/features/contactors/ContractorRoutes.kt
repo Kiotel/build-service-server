@@ -2,6 +2,7 @@ package buildService.features.contactors
 
 import buildService.configuration.AccessForbiddenException
 import buildService.configuration.UserRole
+import buildService.features.useCases.CheckEmail
 import buildService.shared.utils.getInfo
 import buildService.shared.utils.validateName
 import io.github.smiley4.ktoropenapi.delete
@@ -18,7 +19,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.contractorsRoutes(contractorRepository: ContractorRepository) {
+fun Route.contractorsRoutes(contractorRepository: ContractorRepository, checkEmail: CheckEmail) {
     route("/contractors") {
         install(RequestValidation) {
             validate<CreateContractorDto> {
@@ -54,13 +55,16 @@ fun Route.contractorsRoutes(contractorRepository: ContractorRepository) {
             }
         }) {
             val contractor = call.receive<CreateContractorDto>()
+            if (checkEmail(contractor.email)) {
+                throw BadRequestException("Email already in use")
+            }
             val newContractor = contractorRepository.create(contractor)
             call.respond(HttpStatusCode.Created, newContractor)
         }
 
         get({
             summary = "Получить все бригады"
-            description = "Также пагинация будет добавлена"
+            description = "Также пагинация будет когда-нибудь добавлена "
             response {
                 code(HttpStatusCode.OK) {
                     body<List<ContractorDto>>()
@@ -68,7 +72,6 @@ fun Route.contractorsRoutes(contractorRepository: ContractorRepository) {
                 }
             }
         }) {
-            environment.log.info("aaaaaaaaa")
             val contractors = contractorRepository.findAll()
             call.respond(HttpStatusCode.OK, contractors)
         }
@@ -132,9 +135,14 @@ fun Route.contractorsRoutes(contractorRepository: ContractorRepository) {
                     val principalResult = call.principal<JWTPrincipal>()!!.getInfo()
                     val id = call.parameters["contractorId"]?.toInt()
                         ?: throw BadRequestException("Invalid ID format")
-                    val contractor = call.receive<UpdateContractorDto>()
+                    val updateContractorDto = call.receive<UpdateContractorDto>()
                     if (principalResult.id == id.toString() || principalResult.role == UserRole.ADMIN.name) {
-                        val result = contractorRepository.update(id, contractor)
+                        if (principalResult.email != updateContractorDto.email) {
+                            if (checkEmail(updateContractorDto.email)) {
+                                throw BadRequestException("Email already in use")
+                            }
+                        }
+                        val result = contractorRepository.update(id, updateContractorDto)
                             ?: throw NotFoundException("Contract not found")
                         call.respond(HttpStatusCode.OK, result)
                     } else {

@@ -2,23 +2,24 @@ package buildService.features.contactors
 
 import buildService.shared.utils.dbQuery
 import buildService.shared.utils.hashPassword
+import kotlinx.datetime.Clock
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 
 interface ContractorRepository {
-    suspend fun create(user: CreateContractorDto): ContractorDto
+    suspend fun create(contractor: CreateContractorDto): ContractorDto
     suspend fun findAll(): List<ContractorDto>
     suspend fun findById(id: Int): ContractorDto?
-    suspend fun findByEmail(email: String): ContractorDao?
-    suspend fun update(id: Int, contractorDto: UpdateContractorDto): ContractorDto?
-    suspend fun delete(id: Int): Boolean
+    suspend fun findByEmail(findEmail: String): ContractorDao?
+    suspend fun update(contractorId: Int, contractor: UpdateContractorDto): ContractorDto?
+    suspend fun delete(contractorId: Int): Boolean
 }
 
 class ContractorRepositoryImpl() : ContractorRepository {
     override suspend fun create(contractor: CreateContractorDto): ContractorDto = dbQuery {
         ContractorDao.new {
             name = contractor.name
-            workersAmount = contractor.workersAmount
+            workersAmount = contractor.workersAmount.coerceAtLeast(1)
             email = contractor.email
             password = contractor.password.hashPassword()
             rating = 7f
@@ -31,9 +32,9 @@ class ContractorRepositoryImpl() : ContractorRepository {
         }
     }
 
-    override suspend fun findByEmail(emailWanted: String): ContractorDao? {
+    override suspend fun findByEmail(findEmail: String): ContractorDao? {
         return dbQuery {
-            ContractorDao.find { ContractorsTable.email eq emailWanted }.firstOrNull()
+            ContractorDao.find { ContractorsTable.email eq findEmail }.firstOrNull()
         }
     }
 
@@ -43,14 +44,19 @@ class ContractorRepositoryImpl() : ContractorRepository {
         }
     }
 
-    override suspend fun update(id: Int, contractor: UpdateContractorDto): ContractorDto? {
+    override suspend fun update(
+        contractorId: Int, contractor: UpdateContractorDto
+    ): ContractorDto? {
         return dbQuery {
-            ContractorDao.findByIdAndUpdate(id) { old ->
-                contractor.name.let { old.name = it }
-                contractor.email.let { old.email = it }
-                contractor.workersAmount.let { old.workersAmount = it }
-                contractor.rating.let { old.rating = it }
-            }?.toDto()
+            val entity = ContractorDao.findById(contractorId)
+            entity?.apply {
+                name = contractor.name
+                email = contractor.email
+                workersAmount = contractor.workersAmount.coerceAtLeast(1)
+                rating = contractor.rating.coerceIn(0f, 10f)
+                updatedAt = Clock.System.now()
+            }
+            entity?.toDto()
         }
     }
 

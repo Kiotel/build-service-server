@@ -127,8 +127,8 @@ fun Route.workingSitesRoutes(workingSiteRepository: WorkingSiteRepository) {
                     call.parameters["workingSiteId"]?.toInt()
                         ?: throw BadRequestException("Invalid ID")
                 val workingSite = call.receive<UpdateWorkingSiteDto>()
-                workingSiteRepository.update(id, workingSite)
-                call.respond(HttpStatusCode.OK)
+                val result = workingSiteRepository.update(id, workingSite)
+                call.respond(HttpStatusCode.OK, result)
             }
 
             delete({

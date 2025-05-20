@@ -3,6 +3,7 @@ package buildService.configuration
 import buildService.features.contactors.ContractorRepository
 import buildService.features.contactors.comments.ContractorCommentsRepository
 import buildService.features.contactors.contractorsRoutes
+import buildService.features.useCases.CheckEmail
 import buildService.features.users.UserRepository
 import buildService.features.users.WorkingSiteRepository
 import buildService.features.users.userRoutes
@@ -22,9 +23,11 @@ fun Application.configureRouting() {
     val workingSiteRepository by inject<WorkingSiteRepository>()
     val contractorCommentsRepository by inject<ContractorCommentsRepository>()
 
+    val checkEmail by inject<CheckEmail>()
+
     routing {
-        userRoutes(userRepository)
-        contractorsRoutes(contractorRepository)
+        userRoutes(userRepository, checkEmail)
+        contractorsRoutes(contractorRepository, checkEmail)
         workingSitesRoutes(workingSiteRepository)
         authRoutes(userRepository = userRepository, contractorRepository = contractorRepository)
         contractorsCommentsRoutes(

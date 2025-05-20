@@ -43,7 +43,6 @@ fun Application.configureSchemas(dotenv: Dotenv) {
                 WorkingSiteContractorsTable,
                 ContractorCommentsTable
             )
-
         }
     }
 }

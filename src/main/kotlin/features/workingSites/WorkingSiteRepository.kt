@@ -8,15 +8,16 @@ import buildService.features.workingSites.WorkingSiteDao
 import buildService.features.workingSites.WorkingSiteDto
 import buildService.shared.utils.dbQuery
 import io.ktor.server.plugins.*
+import kotlinx.datetime.Clock
 import org.jetbrains.exposed.sql.SizedCollection
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 
 interface WorkingSiteRepository {
-    suspend fun create(user: CreateWorkingSiteDto): WorkingSiteDto
+    suspend fun create(workingSite: CreateWorkingSiteDto): WorkingSiteDto
     suspend fun findAll(): List<WorkingSiteDto>
     suspend fun findById(id: Int): WorkingSiteDto?
-    suspend fun update(id: Int, workingSiteDto: UpdateWorkingSiteDto)
+    suspend fun update(id: Int, updateDto: UpdateWorkingSiteDto): WorkingSiteDto
     suspend fun delete(id: Int): Boolean
 }
 
@@ -43,18 +44,37 @@ class WorkingSiteRepositoryImpl() : WorkingSiteRepository {
         }
     }
 
-    override suspend fun update(id: Int, updateDto: UpdateWorkingSiteDto) {
-        dbQuery {
+    override suspend fun update(id: Int, updateDto: UpdateWorkingSiteDto): WorkingSiteDto {
+        return dbQuery {
             val workingSite = WorkingSiteDao.findById(id)
                 ?: throw NotFoundException("Working site with id $id not found")
 
             updateDto.name?.let { workingSite.name = it }
 
-            updateDto.contractorsIds?.let { ids ->
-                val contractors = ContractorDao.find { ContractorsTable.id inList ids }.toList()
-                if (contractors.size != ids.size) throw NotFoundException()
-                workingSite.contractors = SizedCollection(contractors)
+            updateDto.contractorsIds?.let { desiredIds ->
+                if (desiredIds.isNotEmpty()) {
+                    val foundContractors =
+                        ContractorDao.find { ContractorsTable.id inList desiredIds }.toList()
+                    val foundContractorIds = foundContractors.map { it.id.value }.toSet()
+
+                    if (foundContractors.size != desiredIds.size) {
+                        val missingIds = desiredIds.filterNot { it in foundContractorIds }
+                        throw NotFoundException(
+                            "The following contractor IDs were not found: ${
+                                missingIds.joinToString(
+                                    ", "
+                                )
+                            }"
+                        )
+                    }
+                    workingSite.contractors = SizedCollection(foundContractors)
+                } else {
+                    workingSite.contractors = SizedCollection(emptyList())
+                }
             }
+
+            workingSite.updatedAt = Clock.System.now()
+            return@dbQuery workingSite.toDto()
         }
     }
 

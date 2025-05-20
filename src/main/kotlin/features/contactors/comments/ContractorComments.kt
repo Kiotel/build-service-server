@@ -20,7 +20,7 @@ object ContractorCommentsTable : IntIdTable("contractor_comments") {
     val comment = text("comment")
     val isChanged = bool("is_changed").default(false)
     val createdAt = timestamp("created_at").clientDefault { System.now() }
-    val updateAt = timestamp("updated_at").clientDefault { System.now() }
+    val updatedAt = timestamp("updated_at").clientDefault { System.now() }
 }
 
 class ContractorCommentsDao(id: EntityID<Int>) : IntEntity(id) {
@@ -30,8 +30,8 @@ class ContractorCommentsDao(id: EntityID<Int>) : IntEntity(id) {
     var contractor by ContractorDao referencedOn ContractorCommentsTable.contractorId
     var comment by ContractorCommentsTable.comment
     var isChanged by ContractorCommentsTable.isChanged
-    var createdAt by ContractorCommentsTable.createdAt
-    var updatedAt by ContractorCommentsTable.updateAt
+    val createdAt by ContractorCommentsTable.createdAt
+    var updatedAt by ContractorCommentsTable.updatedAt
 
     fun toDto() = ContractorCommentDto(
         commentId = this.id.value,

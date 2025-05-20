@@ -4,6 +4,7 @@ import buildService.features.contactors.ContractorRepository
 import buildService.features.contactors.ContractorRepositoryImpl
 import buildService.features.contactors.comments.ContractorCommentsRepository
 import buildService.features.contactors.comments.ContractorCommentsRepositoryImpl
+import buildService.features.useCases.CheckEmail
 import buildService.features.users.UserRepository
 import buildService.features.users.UserRepositoryImpl
 import buildService.features.users.WorkingSiteRepository
@@ -32,6 +33,9 @@ fun Application.configureDi() {
         }
         singleOf(::ContractorCommentsRepositoryImpl) {
             bind<ContractorCommentsRepository>()
+            createdAtStart()
+        }
+        singleOf(::CheckEmail) {
             createdAtStart()
         }
     }

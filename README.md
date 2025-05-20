@@ -21,13 +21,13 @@
 ## Запуск в docker
 
 ```shell
-  docker-compose --env-file prod.env up -d
+  docker compose --env-file prod.env up --build -d
 ```
 
 ### Остановить с помощью
 
 ```shell
-   docker-compose --env-file prod.env down
+   docker compose --env-file prod.env down
 ```
 
 ## P.S

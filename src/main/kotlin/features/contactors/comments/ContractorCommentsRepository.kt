@@ -14,12 +14,11 @@ data class CreateContractorComment(
 
 interface ContractorCommentsRepository {
     suspend fun create(newComment: CreateContractorComment): ContractorCommentDto
-
     suspend fun findAllForContractor(contractorId: Int): List<ContractorCommentDto>
     suspend fun findAllForUser(userId: Int): List<ContractorCommentDto>
-    suspend fun findById(id: Int): ContractorCommentDto?
+    suspend fun findById(commentId: Int): ContractorCommentDto?
     suspend fun update(
-        commentId: Int, contractor: UpdateContractorCommentDto
+        commentId: Int, updateComment: UpdateContractorCommentDto
     ): ContractorCommentDto?
 
     suspend fun delete(commentId: Int): Boolean
@@ -67,11 +66,13 @@ class ContractorCommentsRepositoryImpl() : ContractorCommentsRepository {
         commentId: Int, updateComment: UpdateContractorCommentDto
     ): ContractorCommentDto? {
         return dbQuery {
-            ContractorCommentsDao.findByIdAndUpdate(commentId) { old ->
-                old.comment = updateComment.comment
-                old.updatedAt = System.now()
-                old.isChanged = true
-            }?.toDto()
+            val comment = ContractorCommentsDao.findById(commentId)
+            comment?.apply {
+                this.comment = updateComment.comment
+                updatedAt = System.now()
+                isChanged = true
+            }
+            comment?.toDto()
         }
     }
 

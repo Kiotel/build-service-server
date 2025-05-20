@@ -2,6 +2,7 @@ package buildService.features.users
 
 import buildService.shared.utils.dbQuery
 import buildService.shared.utils.hashPassword
+import kotlinx.datetime.Clock
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 
@@ -9,14 +10,14 @@ interface UserRepository {
     suspend fun create(user: RegisterUserDto): UserDto
     suspend fun findByEmail(email: String): UserDao?
     suspend fun findAll(): List<UserDto>
-    suspend fun findById(id: Int): UserDto?
-    suspend fun update(id: Int, userDto: UpdateUserDto)
-    suspend fun delete(id: Int): Boolean
+    suspend fun findById(userId: Int): UserDto?
+    suspend fun update(userId: Int, updateUserDto: UpdateUserDto): UserDto?
+    suspend fun delete(userId: Int): Boolean
 }
 
 class UserRepositoryImpl() : UserRepository {
     override suspend fun create(user: RegisterUserDto): UserDto = dbQuery {
-        var passwordHashed = user.password.hashPassword()
+        val passwordHashed = user.password.hashPassword()
         UserDao.new {
             name = user.name
             email = user.email
@@ -30,24 +31,27 @@ class UserRepositoryImpl() : UserRepository {
         }
     }
 
-    override suspend fun findById(id: Int): UserDto? {
+    override suspend fun findById(userId: Int): UserDto? {
         return dbQuery {
-            UserDao.findById(id)?.toDto()
+            UserDao.findById(userId)?.toDto()
         }
     }
 
-    override suspend fun findByEmail(emailWanted: String): UserDao? {
+    override suspend fun findByEmail(email: String): UserDao? {
         return dbQuery {
-            UserDao.find { UsersTable.email eq emailWanted }.firstOrNull()
+            UserDao.find { UsersTable.email eq email }.firstOrNull()
         }
     }
 
-    override suspend fun update(id: Int, user: UpdateUserDto) {
-        dbQuery {
-            UserDao.findByIdAndUpdate(id) {
-                it.name = user.name
-                it.email = user.email
+    override suspend fun update(userId: Int, updateUserDto: UpdateUserDto): UserDto? {
+        return dbQuery {
+            val user = UserDao.findById(userId)
+            user?.apply {
+                updateUserDto.name.let { name = it }
+                updateUserDto.email.let { email = it }
+                updatedAt = Clock.System.now()
             }
+            user?.toDto()
         }
     }
 

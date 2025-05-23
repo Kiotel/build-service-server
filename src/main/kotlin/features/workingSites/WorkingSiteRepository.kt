@@ -1,11 +1,9 @@
-package buildService.features.users
+package buildService.features.workingSites
 
 import buildService.features.contactors.ContractorDao
 import buildService.features.contactors.ContractorsTable
-import buildService.features.workingSites.CreateWorkingSiteDto
-import buildService.features.workingSites.UpdateWorkingSiteDto
-import buildService.features.workingSites.WorkingSiteDao
-import buildService.features.workingSites.WorkingSiteDto
+import buildService.features.users.UserDao
+import buildService.features.users.UsersTable
 import buildService.shared.utils.dbQuery
 import io.ktor.server.plugins.*
 import kotlinx.datetime.Clock

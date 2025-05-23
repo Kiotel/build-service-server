@@ -5,8 +5,8 @@ import buildService.features.contactors.comments.ContractorCommentsRepository
 import buildService.features.contactors.contractorsRoutes
 import buildService.features.useCases.CheckEmail
 import buildService.features.users.UserRepository
-import buildService.features.users.WorkingSiteRepository
 import buildService.features.users.userRoutes
+import buildService.features.workingSites.WorkingSiteRepository
 import buildService.features.workingSites.workingSitesRoutes
 import features.contactors.comments.contractorsCommentsRoutes
 import io.github.smiley4.ktoropenapi.get

@@ -7,8 +7,8 @@ import buildService.features.contactors.comments.ContractorCommentsRepositoryImp
 import buildService.features.useCases.CheckEmail
 import buildService.features.users.UserRepository
 import buildService.features.users.UserRepositoryImpl
-import buildService.features.users.WorkingSiteRepository
-import buildService.features.users.WorkingSiteRepositoryImpl
+import buildService.features.workingSites.WorkingSiteRepository
+import buildService.features.workingSites.WorkingSiteRepositoryImpl
 import io.ktor.server.application.*
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.createdAtStart

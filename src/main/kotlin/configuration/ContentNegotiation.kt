@@ -13,7 +13,7 @@ fun Application.configureContentNegotiation() {
         namingStrategy = JsonNamingStrategy.SnakeCase
         explicitNulls = false
         isLenient = true
-
+        prettyPrint = true
         ignoreUnknownKeys = true
     }
     install(ContentNegotiation) {

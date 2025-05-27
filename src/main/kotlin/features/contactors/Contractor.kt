@@ -3,6 +3,8 @@ package buildService.features.contactors
 import buildService.features.contactors.comments.ContractorCommentDto
 import buildService.features.contactors.comments.ContractorCommentsDao
 import buildService.features.contactors.comments.ContractorCommentsTable
+import buildService.features.users.UserDao
+import buildService.features.users.UsersTable
 import buildService.features.workingSites.WorkingSiteContractorsTable
 import buildService.features.workingSites.WorkingSiteDao
 import kotlinx.datetime.Clock
@@ -11,13 +13,13 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.charLength
 import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
 
 object ContractorsTable : IntIdTable("contractors") {
+    val userId = reference("user_id", UsersTable, onDelete = ReferenceOption.CASCADE).uniqueIndex()
     val name = varchar("name", 50).check { it.charLength().between(2, 50) }
-    val email = varchar("email", length = 255).uniqueIndex()
-    var password = varchar("password", length = 255).uniqueIndex()
     val workersAmount = integer("workers_amount").check { it greaterEq 1 }
     val rating = float("rating").check { it.between(0f, 10f) }
     val createdAt = timestamp("created_at").clientDefault { Clock.System.now() }
@@ -28,10 +30,11 @@ class ContractorDao(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<ContractorDao>(ContractorsTable)
 
     var name by ContractorsTable.name
-    var email by ContractorsTable.email
     var workersAmount by ContractorsTable.workersAmount
     var rating by ContractorsTable.rating
-    var password by ContractorsTable.password
+
+    var userId by ContractorsTable.userId
+    val user by UserDao referencedOn ContractorsTable.userId
 
     val createdAt by ContractorsTable.createdAt
     var updatedAt by ContractorsTable.updatedAt
@@ -41,8 +44,9 @@ class ContractorDao(id: EntityID<Int>) : IntEntity(id) {
 
     fun toDto() = ContractorDto(
         id = this.id.value,
+        userId = this.userId.value,
         name = this.name,
-        email = this.email,
+        email = this.user.email,
         workersAmount = this.workersAmount,
         rating = this.rating,
         workingSitesIds = this.workingSites.map { it.id.value },
@@ -55,6 +59,7 @@ class ContractorDao(id: EntityID<Int>) : IntEntity(id) {
 @Serializable
 data class ContractorDto(
     val id: Int,
+    val userId: Int,
     val name: String,
     val email: String,
     val workersAmount: Int,
@@ -65,13 +70,41 @@ data class ContractorDto(
     val updatedAt: String
 )
 
+data class CreateContractor(
+    val name: String, val email: String, val workersAmount: Int, val userId: Int
+)
+
 @Serializable
 data class CreateContractorDto(
     val name: String,
     val email: String,
     val workersAmount: Int,
     val password: String,
-)
+) {
+    fun toDomain(userId: Int): CreateContractor {
+        return CreateContractor(
+            name = this.name,
+            email = this.name,
+            workersAmount = this.workersAmount,
+            userId = userId
+        )
+    }
+}
+
+@Serializable
+data class CreateContractorForUserDto(
+    val name: String,
+    val workersAmount: Int,
+) {
+    fun toDomain(userId: Int, email: String): CreateContractor {
+        return CreateContractor(
+            name = this.name,
+            workersAmount = this.workersAmount,
+            userId = userId,
+            email = email
+        )
+    }
+}
 
 @Serializable
 data class UpdateContractorDto(

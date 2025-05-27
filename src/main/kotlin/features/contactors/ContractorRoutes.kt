@@ -3,7 +3,10 @@ package buildService.features.contactors
 import buildService.configuration.AccessForbiddenException
 import buildService.configuration.UserRole
 import buildService.features.useCases.CheckEmail
+import buildService.features.users.RegisterUserDto
+import buildService.features.users.UserRepository
 import buildService.shared.utils.getInfo
+import buildService.shared.utils.validateEmail
 import buildService.shared.utils.validateName
 import io.github.smiley4.ktoropenapi.delete
 import io.github.smiley4.ktoropenapi.get
@@ -19,10 +22,20 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.contractorsRoutes(contractorRepository: ContractorRepository, checkEmail: CheckEmail) {
+fun Route.contractorsRoutes(
+    contractorRepository: ContractorRepository,
+    userRepository: UserRepository,
+    checkEmail: CheckEmail
+) {
     route("/contractors") {
         install(RequestValidation) {
             validate<CreateContractorDto> {
+                val errors = validateName(it.name)
+                errors.addAll(validateEmail(it.email))
+                if (errors.isEmpty()) ValidationResult.Valid
+                else ValidationResult.Invalid(errors)
+            }
+            validate<CreateContractorForUserDto> {
                 val errors = validateName(it.name)
                 if (errors.isEmpty()) ValidationResult.Valid
                 else ValidationResult.Invalid(errors)
@@ -58,7 +71,16 @@ fun Route.contractorsRoutes(contractorRepository: ContractorRepository, checkEma
             if (checkEmail(contractor.email)) {
                 throw BadRequestException("Email already in use")
             }
-            val newContractor = contractorRepository.create(contractor)
+            val newUser = userRepository.create(
+                RegisterUserDto(
+                    name = contractor.name, email = contractor.email, password = contractor.password
+                )
+            )
+            val newContractor = contractorRepository.create(
+                contractor.toDomain(
+                    userId = newUser.id
+                )
+            )
             call.respond(HttpStatusCode.Created, newContractor)
         }
 
@@ -181,6 +203,45 @@ fun Route.contractorsRoutes(contractorRepository: ContractorRepository, checkEma
                         throw AccessForbiddenException("Access forbidden")
                     }
                 }
+            }
+            post("/createForUser", {
+                summary = "Создать новую бригаду для уже существующего пользователя"
+                request {
+                    pathParameter<Int>("userId") { required = true }
+                    body<CreateContractorDto> { required = true }
+                }
+                response {
+                    code(HttpStatusCode.Created) {
+                        body<ContractorDto>()
+                        description = "Бригада успешна создана"
+                    }
+                    code(HttpStatusCode.BadRequest) {
+                        body<String> {
+                            example("Неправильная длина ") {
+                                value = validateName("a")
+                            }
+                        }
+                        description = "Запрос составлен не правильно"
+                    }
+                }
+            }) {
+                val contractor = call.receive<CreateContractorForUserDto>()
+                val principalResult = call.principal<JWTPrincipal>()!!.getInfo()
+                if (contractorRepository.findById(principalResult.id.toInt()) != null) {
+                    throw IllegalArgumentException("Contractor for this account already exists")
+                }
+                if (principalResult.role.uppercase() != UserRole.USER.name) {
+                    throw BadRequestException("Token must be with role user")
+                }
+                val newContractor =
+                    contractorRepository.create(
+                        contractor.toDomain(
+                            userId = principalResult.id.toInt(),
+                            email = principalResult.email
+                        )
+                    )
+                call.respond(HttpStatusCode.Created, newContractor)
+
             }
         }
     }

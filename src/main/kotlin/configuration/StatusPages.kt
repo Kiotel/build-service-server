@@ -6,14 +6,14 @@ import io.ktor.server.plugins.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
+import kotlinx.serialization.SerializationException
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 
 fun Application.configureStatusPages() {
     install(StatusPages) {
         exception<RequestValidationException> { call, cause ->
             call.respond(
-                HttpStatusCode.BadRequest,
-                mapOf("error" to cause.reasons.joinToString(",\n"))
+                HttpStatusCode.BadRequest, mapOf("error" to cause.reasons.joinToString(",\n"))
             )
         }
         exception<IllegalArgumentException> { call, cause ->
@@ -27,7 +27,7 @@ fun Application.configureStatusPages() {
                 HttpStatusCode.NotFound, mapOf("error" to (cause.message ?: "Unknown error"))
             )
         }
-        exception<ExposedSQLException> { call, cause ->
+        exception<ExposedSQLException> { call, _ ->
             call.respond(
                 HttpStatusCode.InternalServerError,
                 mapOf("error" to "Database constraint violation")
@@ -36,6 +36,12 @@ fun Application.configureStatusPages() {
         exception<AccessForbiddenException> { call, cause ->
             call.respond(
                 HttpStatusCode.Forbidden, mapOf("error" to (cause.message ?: "Unknown error"))
+            )
+        }
+        exception<SerializationException> { call, cause ->
+            call.respond(
+                HttpStatusCode.BadRequest,
+                mapOf("error" to "Invalid request body: ${cause.message}")
             )
         }
     }

@@ -27,7 +27,7 @@ fun Application.configureRouting() {
 
     routing {
         userRoutes(userRepository, checkEmail)
-        contractorsRoutes(contractorRepository, checkEmail)
+        contractorsRoutes(contractorRepository, userRepository, checkEmail)
         workingSitesRoutes(workingSiteRepository)
         authRoutes(userRepository = userRepository, contractorRepository = contractorRepository)
         contractorsCommentsRoutes(

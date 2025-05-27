@@ -5,12 +5,11 @@ import buildService.configuration.JWTSecurity.jwtIssuer
 import buildService.configuration.JWTSecurity.jwtRealm
 import buildService.configuration.JWTSecurity.jwtSecret
 import buildService.configuration.JWTSecurity.validityInMs
-import buildService.features.contactors.ContractorDao
 import buildService.features.contactors.ContractorRepository
-import buildService.features.users.UserDao
 import buildService.features.users.UserRepository
 import buildService.shared.utils.validateEmail
 import buildService.shared.utils.validatePassword
+import buildService.shared.utils.validateRole
 import buildService.shared.utils.verifyPasswords
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
@@ -19,6 +18,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import io.ktor.server.plugins.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -27,7 +27,7 @@ import kotlinx.serialization.Serializable
 import java.util.*
 
 @Serializable
-data class LoginDto(val email: String, val password: String)
+data class LoginDto(val email: String, val password: String, val role: String)
 
 object JWTSecurity {
     lateinit var jwtAudience: String
@@ -67,8 +67,8 @@ fun Application.configureSecurity(dotenv: Dotenv) {
     }
 }
 
-enum class UserRole(val string: String) {
-    ADMIN("admin"), USER("user"), CONTRACTOR("contractor")
+enum class UserRole {
+    ADMIN, USER, CONTRACTOR
 }
 
 fun Route.authRoutes(userRepository: UserRepository, contractorRepository: ContractorRepository) {
@@ -76,6 +76,7 @@ fun Route.authRoutes(userRepository: UserRepository, contractorRepository: Contr
         install(RequestValidation) {
             validate<LoginDto> {
                 val errors = validateEmail(it.email)
+                errors.addAll(validateRole(it.role))
                 errors.addAll(validatePassword(it.password))
                 if (errors.isEmpty()) ValidationResult.Valid
                 else ValidationResult.Invalid(errors)
@@ -83,40 +84,50 @@ fun Route.authRoutes(userRepository: UserRepository, contractorRepository: Contr
         }
         post {
             val loginUserDto = call.receive<LoginDto>()
-            var role: UserRole = UserRole.USER
-            var user: UserDao? = null
-            var contractor: ContractorDao? = null
-            if (loginUserDto.email == "admin@admin" && loginUserDto.password == "admin123") {
-                role = UserRole.ADMIN
-            } else {
-                user = userRepository.findByEmail(loginUserDto.email)
-                if (user == null) {
-                    contractor = contractorRepository.findByEmail(loginUserDto.email)
-                    if (contractor != null) {
-                        role = UserRole.CONTRACTOR
+            val role = loginUserDto.role.uppercase()
+            val (id, password) = when (role) {
+                UserRole.USER.name -> {
+                    val user = userRepository.findByEmail(loginUserDto.email)
+                        ?: throw NotFoundException("User not found")
+                    Pair(user.id.value, user.password)
+                }
+
+                UserRole.CONTRACTOR.name -> {
+                    val contractor = contractorRepository.findByEmail(loginUserDto.email)
+                        ?: throw NotFoundException("Contractor not found")
+                    val user = userRepository.findByEmail(loginUserDto.email)
+                        ?: throw Exception("user somehow not found")
+                    Pair(contractor.id.value, user.password)
+                }
+
+                UserRole.ADMIN.name -> {
+                    if (loginUserDto.email == "admin@admin" && loginUserDto.password == "admin123") {
+                        Pair(-1, "1")
+                    } else {
+                        call.respond(HttpStatusCode.Unauthorized, "Invalid password or email")
+                        return@post
                     }
                 }
+
+                else -> throw BadRequestException("Invalid role")
             }
-            val id = user?.id?.value ?: contractor?.id?.value ?: -1
-            if (user != null || contractor != null || role == UserRole.ADMIN) {
-                val password =
-                    if (role == UserRole.ADMIN) "1" else user?.password ?: contractor!!.password
-                if (verifyPasswords(loginUserDto.password, password) || role == UserRole.ADMIN) {
-                    val token = JWT.create().withAudience(jwtAudience).withIssuer(jwtIssuer)
-                        .withClaim("email", loginUserDto.email).withClaim("role", role.name)
-                        .withClaim("id", id.toString())
-                        .withExpiresAt(Date(System.currentTimeMillis() + validityInMs))
-                        .sign(Algorithm.HMAC256(jwtSecret))
-                    call.respond(LoginResultDto(id, token, role.name))
-                } else {
-                    call.respond(HttpStatusCode.Unauthorized, "Invalid password")
-                }
+            if (verifyPasswords(
+                    loginUserDto.password, password
+                ) || loginUserDto.role == UserRole.ADMIN.name
+            ) {
+                val token = JWT.create().withAudience(jwtAudience).withIssuer(jwtIssuer)
+                    .withClaim("email", loginUserDto.email).withClaim("role", role)
+                    .withClaim("id", id.toString())
+                    .withExpiresAt(Date(System.currentTimeMillis() + validityInMs))
+                    .sign(Algorithm.HMAC256(jwtSecret))
+                call.respond(LoginResultDto(id, token))
             } else {
-                call.respond(HttpStatusCode.NotFound, "User not found")
+                call.respond(HttpStatusCode.Unauthorized, "Invalid password")
             }
+
         }
     }
 }
 
 @Serializable
-data class LoginResultDto(val id: Int, val token: String, val role: String)
+data class LoginResultDto(val id: Int, val token: String)

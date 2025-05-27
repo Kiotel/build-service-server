@@ -1,5 +1,7 @@
 package buildService.shared.utils
 
+import buildService.configuration.UserRole
+
 fun validateName(name: String?): MutableList<String> {
     val errors = mutableListOf<String>()
     if (name.isNullOrBlank()) {
@@ -17,6 +19,18 @@ fun validateEmail(email: String?): MutableList<String> {
     } else {
         if (email.length < 3 || !email.contains("@")) {
             errors.add("Email must be valid")
+        }
+    }
+    return errors
+}
+
+fun validateRole(role: String?): MutableList<String> {
+    val errors = mutableListOf<String>()
+    if (role.isNullOrBlank()) {
+        errors.add("Role cannot be blank or null")
+    } else {
+        if (role.uppercase() !in UserRole.entries.map { it.toString() }) {
+            errors.add("Role '$role' is not valid")
         }
     }
     return errors

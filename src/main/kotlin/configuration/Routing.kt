@@ -15,6 +15,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.datetime.Clock
 import org.koin.ktor.ext.inject
 
 fun Application.configureRouting() {
@@ -35,7 +36,10 @@ fun Application.configureRouting() {
             contractorCommentsRepository = contractorCommentsRepository,
         )
         get("/") {
-            call.respondText("hello changed")
+            call.respondText("hello changed ")
+        }
+        get("/latestUpdate") {
+            call.respondText(Clock.System.now().toString())
         }
         authenticate("jwt") {
             get("/protected", {

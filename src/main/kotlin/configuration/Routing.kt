@@ -35,7 +35,7 @@ fun Application.configureRouting() {
             contractorCommentsRepository = contractorCommentsRepository,
         )
         get("/") {
-            call.respondText("hello")
+            call.respondText("hello changed")
         }
         authenticate("jwt") {
             get("/protected", {

@@ -5,6 +5,8 @@ services:
   web:
     env_file:
       - ./prod.env
+    volumes:
+      - ./prod.env:/app/prod.env
     depends_on:
       postgres:
         condition: service_healthy

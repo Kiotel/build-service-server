@@ -1,5 +1,6 @@
 prod.env
 test.env
+db_data
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar

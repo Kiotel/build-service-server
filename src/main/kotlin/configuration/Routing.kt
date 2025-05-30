@@ -34,6 +34,9 @@ fun Application.configureRouting() {
             contractorRepository = contractorRepository,
             contractorCommentsRepository = contractorCommentsRepository,
         )
+        get("/") {
+            call.respondText("hello")
+        }
         authenticate("jwt") {
             get("/protected", {
                 summary = "чисто тестовое, можно проверить токен"

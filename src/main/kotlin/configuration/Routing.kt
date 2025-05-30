@@ -26,6 +26,8 @@ fun Application.configureRouting() {
 
     val checkEmail by inject<CheckEmail>()
 
+    val currentTime = Clock.System.now().toString()
+
     routing {
         userRoutes(userRepository, checkEmail)
         contractorsRoutes(contractorRepository, userRepository, checkEmail)
@@ -39,7 +41,7 @@ fun Application.configureRouting() {
             call.respondText("hello changed ")
         }
         get("/latestUpdate") {
-            call.respondText(Clock.System.now().toString())
+            call.respondText(currentTime)
         }
         authenticate("jwt") {
             get("/protected", {

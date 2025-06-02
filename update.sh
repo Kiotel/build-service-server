@@ -8,7 +8,7 @@ if [ $LOCAL = $REMOTE ]; then
 	echo "$(date --utc +%FT%TZ): No changes detected in git"
 elif [ $LOCAL = $BASE ]; then
 	echo "$(date --utc +%FT%TZ): Changes detected, deploying new version: $BUILD_VERSION"
-	./scripts/deploy.sh
+	./deploy.sh
 elif [ $REMOTE = $BASE ]; then
 	echo "$(date --utc +%FT%TZ): Local changes detected, stashing"
 	git stash

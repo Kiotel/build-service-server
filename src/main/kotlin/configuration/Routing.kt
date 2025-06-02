@@ -38,7 +38,7 @@ fun Application.configureRouting() {
             contractorCommentsRepository = contractorCommentsRepository,
         )
         get("/") {
-            call.respondText("hello changed again v3")
+            call.respondText("hello changed again v4")
         }
         get("/latestUpdate") {
             call.respondText(currentTime)

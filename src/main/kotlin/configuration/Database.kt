@@ -7,9 +7,9 @@ import buildService.features.workingSites.WorkingSiteContractorsTable
 import buildService.features.workingSites.WorkingSitesTable
 import io.github.cdimascio.dotenv.Dotenv
 import io.ktor.server.application.*
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 @Suppress("UnusedReceiverParameter")
 fun Application.configureSchemas(dotenv: Dotenv) {

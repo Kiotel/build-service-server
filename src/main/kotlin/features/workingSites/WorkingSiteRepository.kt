@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package buildService.features.workingSites
 
 import buildService.features.contactors.ContractorDao
@@ -6,10 +8,11 @@ import buildService.features.users.UserDao
 import buildService.features.users.UsersTable
 import buildService.shared.utils.dbQuery
 import io.ktor.server.plugins.*
-import kotlinx.datetime.Clock
-import org.jetbrains.exposed.sql.SizedCollection
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.jdbc.SizedCollection
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
+import kotlin.time.ExperimentalTime
 
 interface WorkingSiteRepository {
     suspend fun create(workingSite: CreateWorkingSiteDto): WorkingSiteDto
@@ -71,7 +74,7 @@ class WorkingSiteRepositoryImpl() : WorkingSiteRepository {
                 }
             }
 
-            workingSite.updatedAt = Clock.System.now()
+            workingSite.updatedAt = kotlin.time.Clock.System.now()
             return@dbQuery workingSite.toDto()
         }
     }

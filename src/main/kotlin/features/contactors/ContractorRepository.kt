@@ -1,12 +1,15 @@
+@file:OptIn(ExperimentalTime::class)
+
 package buildService.features.contactors
 
 import buildService.features.users.UserDao
 import buildService.features.users.UsersTable.email
 import buildService.shared.utils.dbQuery
 import io.ktor.server.plugins.*
-import kotlinx.datetime.Clock
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 interface ContractorRepository {
     suspend fun create(contractor: CreateContractor): ContractorDto

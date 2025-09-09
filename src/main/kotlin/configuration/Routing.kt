@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package buildService.configuration
 
 import buildService.features.contactors.ContractorRepository
@@ -15,8 +17,9 @@ import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.datetime.Clock
 import org.koin.ktor.ext.inject
+import kotlin.time.Clock.System
+import kotlin.time.ExperimentalTime
 
 fun Application.configureRouting() {
     val userRepository by inject<UserRepository>()
@@ -26,7 +29,7 @@ fun Application.configureRouting() {
 
     val checkEmail by inject<CheckEmail>()
 
-    val currentTime = Clock.System.now().toString()
+    val currentTime = System.now().toString()
 
     routing {
         userRoutes(userRepository, checkEmail)

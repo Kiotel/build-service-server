@@ -1,17 +1,20 @@
+@file:OptIn(ExperimentalTime::class)
+
 package buildService.features.contactors.comments
 
 import buildService.features.contactors.ContractorDao
 import buildService.features.contactors.ContractorsTable
 import buildService.features.users.UserDao
 import buildService.features.users.UsersTable
-import kotlinx.datetime.Clock.System
 import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.dao.IntEntity
-import org.jetbrains.exposed.dao.IntEntityClass
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IntIdTable
-import org.jetbrains.exposed.sql.ReferenceOption
-import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
+import org.jetbrains.exposed.v1.core.ReferenceOption
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.dao.id.IntIdTable
+import org.jetbrains.exposed.v1.dao.IntEntity
+import org.jetbrains.exposed.v1.dao.IntEntityClass
+import org.jetbrains.exposed.v1.datetime.timestamp
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 object ContractorCommentsTable : IntIdTable("contractor_comments") {
     val contractorId =
@@ -19,8 +22,8 @@ object ContractorCommentsTable : IntIdTable("contractor_comments") {
     val userId = optReference("user_id", UsersTable, onDelete = ReferenceOption.SET_NULL)
     val comment = text("comment")
     val isChanged = bool("is_changed").default(false)
-    val createdAt = timestamp("created_at").clientDefault { System.now() }
-    val updatedAt = timestamp("updated_at").clientDefault { System.now() }
+    val createdAt = timestamp("created_at").clientDefault { Clock.System.now() }
+    val updatedAt = timestamp("updated_at").clientDefault { Clock.System.now() }
 }
 
 class ContractorCommentsDao(id: EntityID<Int>) : IntEntity(id) {
@@ -57,10 +60,10 @@ data class ContractorCommentDto(
 
 @Serializable
 data class CreateContractorCommentDto(
-    val comment: String
+    val comment: String,
 )
 
 @Serializable
 data class UpdateContractorCommentDto(
-    val comment: String
+    val comment: String,
 )

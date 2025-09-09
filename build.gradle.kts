@@ -4,22 +4,9 @@ val kotlin_version: String by project
 val logback_version: String by project
 
 plugins {
-    kotlin("jvm") version "2.1.10"
+    kotlin("jvm") version "2.2.10"
     id("io.ktor.plugin") version "3.2.3"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.10"
-}
-
-tasks.withType<ProcessResources> {
-    val wasmOutput = file("../web/build/dist/wasmJs/productionExecutable")
-    if (wasmOutput.exists()) {
-        inputs.dir(wasmOutput)
-    }
-
-    from("../web/build/dist/wasmJs/productionExecutable") {
-        into("web")
-        include("**/*")
-    }
-    duplicatesStrategy = DuplicatesStrategy.WARN
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.10"
 }
 
 group = "buildService"

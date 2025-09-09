@@ -40,7 +40,12 @@ class UserRoutesTest {
         val client = createTestClient()
         val response = client.post("/login") {
             contentType(ContentType.Application.Json)
-            setBody(LoginDto(email = "admin@admin", password = "admin123"))
+            setBody(
+                LoginDto(
+                    email = "admin@admin", password = "admin123",
+                    role = "admin"
+                )
+            )
         }
         assertEquals(HttpStatusCode.OK, response.status, "Admin login failed")
         val result: LoginResultDto = response.body()
@@ -98,7 +103,12 @@ class UserRoutesTest {
         val client = createTestClient()
         val response = client.post("/login") {
             contentType(ContentType.Application.Json)
-            setBody(LoginDto(email = "test@test.test", password = "testtest"))
+            setBody(
+                LoginDto(
+                    email = "test@test.test", password = "testtest",
+                    role = "user"
+                )
+            )
         }
         assertEquals(HttpStatusCode.OK, response.status, "User login failed")
         val result: LoginResultDto = response.body()

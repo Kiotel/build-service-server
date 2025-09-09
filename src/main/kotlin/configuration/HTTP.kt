@@ -3,7 +3,6 @@ package buildService.configuration
 import io.github.smiley4.ktoropenapi.OpenApi
 import io.github.smiley4.ktoropenapi.config.AuthScheme
 import io.github.smiley4.ktoropenapi.config.AuthType
-import io.github.smiley4.ktoropenapi.config.SchemaGenerator
 import io.github.smiley4.ktoropenapi.openApi
 import io.github.smiley4.ktorswaggerui.swaggerUI
 import io.ktor.http.*
@@ -25,10 +24,6 @@ fun Application.configureHTTP() {
         this.info {
             this.title = "API для BuildService"
             this.version = "0.1"
-        }
-        schemas {
-            @Suppress("MISSING_DEPENDENCY_CLASS_IN_EXPRESSION_TYPE")
-            this.generator = SchemaGenerator.kotlinx()
         }
         security {
             // configure a basic-auth security scheme

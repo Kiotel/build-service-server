@@ -121,7 +121,7 @@ fun Route.authRoutes(userRepository: UserRepository, contractorRepository: Contr
                     .withClaim("id", id.toString())
                     .withExpiresAt(Date(System.currentTimeMillis() + validityInMs))
                     .sign(Algorithm.HMAC256(jwtSecret))
-                call.respond(LoginResultDto(id, token))
+                call.respond(LoginResultDto(id, token, role))
             } else {
                 call.respond(HttpStatusCode.Unauthorized, "Invalid password")
             }
@@ -131,4 +131,4 @@ fun Route.authRoutes(userRepository: UserRepository, contractorRepository: Contr
 }
 
 @Serializable
-data class LoginResultDto(val id: Int, val token: String)
+data class LoginResultDto(val id: Int, val token: String, val role: String)

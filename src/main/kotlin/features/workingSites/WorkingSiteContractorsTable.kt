@@ -1,7 +1,7 @@
 package buildService.features.workingSites
 
 import buildService.features.contactors.ContractorsTable
-import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.sql.Table
 
 object WorkingSiteContractorsTable : Table("working_site_contractors") {
     val workingSite = reference("working_site_id", WorkingSitesTable)

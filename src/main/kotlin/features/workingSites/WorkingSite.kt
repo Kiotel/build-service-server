@@ -1,19 +1,16 @@
-@file:OptIn(ExperimentalTime::class)
-
 package buildService.features.workingSites
 
 import buildService.features.contactors.ContractorDao
 import buildService.features.users.UserDao
 import buildService.features.users.UsersTable
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.v1.core.ReferenceOption
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
-import org.jetbrains.exposed.v1.core.dao.id.IntIdTable
-import org.jetbrains.exposed.v1.dao.IntEntity
-import org.jetbrains.exposed.v1.dao.IntEntityClass
-import org.jetbrains.exposed.v1.datetime.timestamp
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
+import org.jetbrains.exposed.dao.IntEntity
+import org.jetbrains.exposed.dao.IntEntityClass
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.ReferenceOption
+import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
 
 object WorkingSitesTable : IntIdTable("working_sites") {
     val name = varchar("name", 255)

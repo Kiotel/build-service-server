@@ -1,13 +1,10 @@
-@file:OptIn(ExperimentalTime::class)
-
 package buildService.features.users
 
 import buildService.shared.utils.dbQuery
 import buildService.shared.utils.hashPassword
-import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.jdbc.deleteWhere
-import kotlin.time.Clock.System
-import kotlin.time.ExperimentalTime
+import kotlinx.datetime.Clock
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
 
 interface UserRepository {
     suspend fun create(user: RegisterUserDto): UserDto
@@ -52,7 +49,7 @@ class UserRepositoryImpl() : UserRepository {
             user?.apply {
                 updateUserDto.name.let { name = it }
                 updateUserDto.email.let { email = it }
-                updatedAt = System.now()
+                updatedAt = Clock.System.now()
             }
             user?.toDto()
         }

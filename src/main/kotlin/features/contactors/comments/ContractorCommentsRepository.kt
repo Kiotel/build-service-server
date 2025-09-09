@@ -1,15 +1,12 @@
-@file:OptIn(ExperimentalTime::class)
-
 package buildService.features.contactors.comments
 
 import buildService.features.contactors.ContractorDao
 import buildService.features.users.UserDao
 import buildService.shared.utils.dbQuery
 import io.ktor.server.plugins.*
-import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.jdbc.deleteWhere
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
+import kotlinx.datetime.Clock.System
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
 
 data class CreateContractorComment(
     val contractorId: Int, val userId: Int, val comment: String
@@ -72,7 +69,7 @@ class ContractorCommentsRepositoryImpl() : ContractorCommentsRepository {
             val comment = ContractorCommentsDao.findById(commentId)
             comment?.apply {
                 this.comment = updateComment.comment
-                updatedAt = Clock.System.now()
+                updatedAt = System.now()
                 isChanged = true
             }
             comment?.toDto()

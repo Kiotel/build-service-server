@@ -1,24 +1,22 @@
-@file:OptIn(ExperimentalTime::class)
-
 package buildService.features.users
 
 import buildService.features.workingSites.WorkingSiteDao
 import buildService.features.workingSites.WorkingSiteDto
 import buildService.features.workingSites.WorkingSitesTable
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
-import org.jetbrains.exposed.v1.core.dao.id.IntIdTable
-import org.jetbrains.exposed.v1.dao.IntEntity
-import org.jetbrains.exposed.v1.dao.IntEntityClass
-import org.jetbrains.exposed.v1.datetime.timestamp
-import kotlin.time.ExperimentalTime
+import org.jetbrains.exposed.dao.IntEntity
+import org.jetbrains.exposed.dao.IntEntityClass
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
 
 object UsersTable : IntIdTable("users") {
     val name = varchar("name", length = 50)
     val email = varchar("email", length = 255).uniqueIndex()
     var password = varchar("password", length = 255)
-    val createdAt = timestamp("created_at").clientDefault { kotlin.time.Clock.System.now() }
-    val updatedAt = timestamp("updated_at").clientDefault { kotlin.time.Clock.System.now() }
+    val createdAt = timestamp("created_at").clientDefault { Clock.System.now() }
+    val updatedAt = timestamp("updated_at").clientDefault { Clock.System.now() }
 }
 
 class UserDao(id: EntityID<Int>) : IntEntity(id) {

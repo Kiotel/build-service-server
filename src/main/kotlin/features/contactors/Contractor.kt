@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalTime::class)
-
 package buildService.features.contactors
 
 import buildService.features.contactors.comments.ContractorCommentDto
@@ -9,25 +7,23 @@ import buildService.features.users.UserDao
 import buildService.features.users.UsersTable
 import buildService.features.workingSites.WorkingSiteContractorsTable
 import buildService.features.workingSites.WorkingSiteDao
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.v1.core.ReferenceOption
-import org.jetbrains.exposed.v1.core.between
-import org.jetbrains.exposed.v1.core.charLength
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
-import org.jetbrains.exposed.v1.core.dao.id.IntIdTable
-import org.jetbrains.exposed.v1.core.greaterEq
-import org.jetbrains.exposed.v1.dao.IntEntity
-import org.jetbrains.exposed.v1.dao.IntEntityClass
-import org.jetbrains.exposed.v1.datetime.timestamp
-import kotlin.time.ExperimentalTime
+import org.jetbrains.exposed.dao.IntEntity
+import org.jetbrains.exposed.dao.IntEntityClass
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.ReferenceOption
+import org.jetbrains.exposed.sql.charLength
+import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
 
 object ContractorsTable : IntIdTable("contractors") {
-    val userId = reference("user_id", UsersTable, onDelete = ReferenceOption.CASCADE)
+    val userId = reference("user_id", UsersTable, onDelete = ReferenceOption.CASCADE).uniqueIndex()
     val name = varchar("name", 50).check { it.charLength().between(2, 50) }
     val workersAmount = integer("workers_amount").check { it greaterEq 1 }
     val rating = float("rating").check { it.between(0f, 10f) }
-    val createdAt = timestamp("created_at").clientDefault { kotlin.time.Clock.System.now() }
-    val updatedAt = timestamp("updated_at").clientDefault { kotlin.time.Clock.System.now() }
+    val createdAt = timestamp("created_at").clientDefault { Clock.System.now() }
+    val updatedAt = timestamp("updated_at").clientDefault { Clock.System.now() }
 }
 
 class ContractorDao(id: EntityID<Int>) : IntEntity(id) {
